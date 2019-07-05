@@ -6,10 +6,9 @@ from pathlib import Path
 import os
 
 home = str(Path.home())
-if not "tse" in os.listdir(home):
-    os.mkdir(os.path.join(home, "tse"))
+
 engine_path = "sqlite:///" + home + "/tse/" + "stocks.db"
-engine = create_engine("sqlite:///Stocks.db")
+engine = create_engine(engine_path)
 
 Session = sessionmaker()
 Session.configure(bind=engine)

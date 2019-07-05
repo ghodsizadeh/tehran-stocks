@@ -1,4 +1,4 @@
-from config.engine import *
+from tehran_stocks.config import *
 from sqlalchemy.orm import relationship
 import pandas as pd
 

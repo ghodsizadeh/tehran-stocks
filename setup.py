@@ -9,7 +9,7 @@ with open(path.join(THISDIRECTORY, "README.md")) as f:
 
 setup(
     name="tehran-stocks",
-    version="0.0.1",
+    version="0.0.3",
     description="DataDownloader for Tehran stock market",
     url="http://github.com/ghodsizadeh/tehran-stocks",
     author="Mehdi Ghodsizadeh",
