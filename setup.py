@@ -18,6 +18,6 @@ setup(
     long_description=LONGDESC,
     long_description_content_type="text/markdown",
     packages=["tehran_stocks"],
+    install_requires=["pandas", "sqlalchemy"],
     zip_safe=False,
 )
-
