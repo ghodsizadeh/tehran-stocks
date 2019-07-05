@@ -6,8 +6,8 @@ from pathlib import Path
 import os
 
 home = str(Path.home())
-
-engine_path = "sqlite:///" + home + "/tse/" + "stocks.db"
+db_path = os.path.join(home + "/tse/" + "stocks.db")
+engine_path = "sqlite:///" + db_path
 engine = create_engine(engine_path)
 
 Session = sessionmaker()
