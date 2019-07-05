@@ -1,1 +1,1 @@
-from .stock_name import get_stock_groups, get_stock_ids
+from .names import get_stock_groups, get_stock_ids, fill_stock_table
