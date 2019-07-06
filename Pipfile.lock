@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "9ab97fc2ee96d71e7d66279ec3f739d44d7c097b1c3b3cc12ce14064776d9fdb"
+            "sha256": "b3dd2d5529f43e4c1fdd47c9ef3eb1256181c47775497ea0992b64baef238778"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -190,6 +190,14 @@
             ],
             "index": "pypi",
             "version": "==1.3.5"
+        },
+        "tehran-stocks": {
+            "hashes": [
+                "sha256:3d23bfedf3eefa49f07e98ee4b87ba0a3f90f1b89bef92553c372b44a921dedf",
+                "sha256:77edd64f8d2c7bec3d49897c4c184ff6c2837ff8827a20ee04124abc0afeb1e3"
+            ],
+            "index": "pypi",
+            "version": "==0.0.3"
         },
         "urllib3": {
             "hashes": [

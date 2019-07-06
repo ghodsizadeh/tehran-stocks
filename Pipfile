@@ -10,6 +10,7 @@ requests = "*"
 sqlalchemy = "*"
 pandas = "*"
 pytest = "*"
+tehran-stocks = {editable = true,version = "*"}
 
 [requires]
 python_version = "3.7"
