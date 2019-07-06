@@ -1,0 +1,7 @@
+language: python
+
+install:
+  - pip install pipenv pytest
+  - pipenv install
+
+script: pytest
