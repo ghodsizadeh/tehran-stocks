@@ -22,7 +22,10 @@ class QueryMixin:
 
     def display(self):
         data = self.__dict__
-        del data["_sa_instance_state"]
+        try:
+            del data["_sa_instance_state"]
+        except:
+            pass
         return data
 
 

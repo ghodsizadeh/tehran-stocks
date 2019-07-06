@@ -27,6 +27,31 @@ class Stocks(Base):
         self.df = df
         return df
 
+    def update(self):
+        from tehran_stocks import downloader
+
+        try:
+            res =  downloader.update_stock_price(self.code)
+            return res
+        except:
+            return False
+
+    def check_price(self):
+        try:
+            self.df
+        except:
+            self.price_df()
+
+    def summary(self):
+        self.check_price()
+        df = self.df
+        sdate = df.date.min().strftime("%Y%m%d")
+        edate = df.date.max().strftime("%Y%m%d")
+
+        print(f"Start date: {sdate}")
+        print(f"End date: {edate}")
+        print(f"Total days: {len(df)}")
+
 
 class StockPrice(Base):
     __tablename__ = "stock_price"

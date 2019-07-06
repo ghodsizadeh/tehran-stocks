@@ -9,9 +9,6 @@ from tehran_stocks.models import StockPrice, Stocks
 
 
 def update_stock_price(code):
-    test = db.session.query(StockPrice).filter(StockPrice.code == code).first()
-    if test:
-        return False, code
     try:
         q = f"select dtyyyymmdd as date from stock_price where code = {code}"
         temp = pd.read_sql(q, db.engine)
