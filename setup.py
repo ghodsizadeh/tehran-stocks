@@ -20,4 +20,5 @@ setup(
     packages=["tehran_stocks"],
     install_requires=["pandas", "sqlalchemy"],
     zip_safe=False,
+    python_requires=">=3.6",
 )
