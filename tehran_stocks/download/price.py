@@ -21,3 +21,10 @@ def update_stock_price(code):
         return True, code
     except Exception as e:
         return e, code
+
+
+def update_group(code):
+    stocks = db.session.query(Stocks.code).filter_by(group_code=code).all()
+    for i, stock in enumerate(stocks):
+        update_stock_price(stock[0])
+        print(f"progress: {100*(i+1)/len(stocks):.1f}%", end="\r")
