@@ -8,7 +8,7 @@ from tehran_stocks.models import Stocks
 def get_stock_ids(group):
     url = "http://www.tsetmc.com/tsev2/data/InstValue.aspx?g={}&t=g&s=0"
     r = requests.get(url.format(group))
-    ids = set(re.findall("\d{15,20}", r.text))
+    ids = set(re.findall(r"\d{15,20}", r.text))
     return list(ids)
 
 
@@ -18,7 +18,7 @@ def get_stock_groups():
     its a helper for other parts of package to collect stock lists.
     """
     r = requests.get("http://www.tsetmc.com/Loader.aspx?ParTree=111C1213")
-    groups = re.findall("\d{2}", r.text)
+    groups = re.findall(r"\d{2}", r.text)
     return groups
 
 
@@ -44,32 +44,32 @@ def get_stock_detail(stock_id: str, group_id: int) -> "stock":
     url = "http://www.tsetmc.com/Loader.aspx?ParTree=151311&i={}".format(stock_id)
     r = requests.get(url)
     stock = {"code": stock_id}
-    stock["group_name"] = re.findall("LSecVal='([\D]*)',", r.text)[0]
-    stock["instId"] = re.findall("InstrumentID='([\w\d]*)',", r.text)[0]
+    stock["group_name"] = re.findall(r"LSecVal='([\D]*)',", r.text)[0]
+    stock["instId"] = re.findall(r"InstrumentID='([\w\d]*)',", r.text)[0]
     stock["insCode"] = (
-        stock_id if re.findall("InsCode='(\d*)',", r.text)[0] == stock_id else 0
+        stock_id if re.findall(r"InsCode='(\d*)',", r.text)[0] == stock_id else 0
     )
-    stock["baseVol"] = float(re.findall("BaseVol=([\.\d]*),", r.text)[0])
+    stock["baseVol"] = float(re.findall(r"BaseVol=([\.\d]*),", r.text)[0])
     try:
-        stock["name"] = re.findall("LVal18AFC='([\D]*)',", r.text)[0]
+        stock["name"] = re.findall(r"LVal18AFC='([\D]*)',", r.text)[0]
     except:
         return
     try:
-        stock["title"] = re.findall("Title='([\D]*)',", r.text)[0]
+        stock["title"] = re.findall(r"Title='([\D]*)',", r.text)[0]
     except:
         return
     try:
-        stock["sectorPe"] = float(re.findall("SectorPE='([\.\d]*)',", r.text)[0])
+        stock["sectorPe"] = float(re.findall(r"SectorPE='([\.\d]*)',", r.text)[0])
     except:
         stock["sectorPe"] = None
     try:
-        stock["shareCount"] = float(re.findall("ZTitad=([\.\d]*),", r.text)[0])
+        stock["shareCount"] = float(re.findall(r"ZTitad=([\.\d]*),", r.text)[0])
     except:
         stock["shareCount"] = None
 
     try:
         stock["estimatedEps"] = float(
-            re.findall("EstimatedEPS='([\.\d]*)',", r.text)[0]
+            re.findall(r"EstimatedEPS='([\.\d]*)',", r.text)[0]
         )
     except:
         stock["estimatedEps"] = None
