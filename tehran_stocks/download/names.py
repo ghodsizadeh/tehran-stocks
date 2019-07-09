@@ -22,8 +22,7 @@ def get_stock_groups():
     return groups
 
 
-def get_stock_detail(stock_id: str, group_id: int) -> "stock"
-    :
+def get_stock_detail(stock_id: str, group_id: int) -> "stock":
     """
     Dowload stocks detail and save them to the database.
     better not use it alone.
@@ -85,14 +84,14 @@ def get_stock_detail(stock_id: str, group_id: int) -> "stock"
 
 
 def fill_stock_table():
-    '''
+    """
     Download Stock Table,
     1- gets groups
     2- gets stock in groups
     3- download stock detail
     4- save them to database
     5- guides you to use the package
-    '''
+    """
     print("Downloading group ids...")
     groups = sorted(get_stock_groups())
     for i, group in enumerate(groups):

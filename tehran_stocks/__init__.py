@@ -1,14 +1,14 @@
 import os
 
-import config as db
-from download import (
+import tehran_stocks.config as db
+from tehran_stocks.download import (
     get_stock_detail,
     get_stock_groups,
     get_stock_ids,
     update_group,
     update_stock_price,
 )
-from models import StockPrice, Stocks
+from tehran_stocks.models import StockPrice, Stocks
 
 from .initializer import init_db
 

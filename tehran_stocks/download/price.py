@@ -8,24 +8,24 @@ import tehran_stocks.config as db
 from tehran_stocks.models import StockPrice, Stocks
 
 
-def update_stock_price(code: str ):
-        '''
-        Update (or download for the first time) Stock prices
-     
+def update_stock_price(code: str):
+    """
+    Update (or download for the first time) Stock prices
+    
 
-        params:
-        ----------------
-        code: str or intege
+    params:
+    ----------------
+    code: str or intege
 
-        example
-        ----------------
-        `update_stock_price('44891482026867833') #Done`
-        or use inside Stock object
-        ```
-        from tehran_stocks.models import Stocks
-        stock = Stocks.query.first()
-        stock.update() #Done
-        '''
+    example
+    ----------------
+    `update_stock_price('44891482026867833') #Done`
+    or use inside Stock object
+    ```
+    from tehran_stocks.models import Stocks
+    stock = Stocks.query.first()
+    stock.update() #Done
+    """
     try:
         q = f"select dtyyyymmdd as date from stock_price where code = {code}"
         temp = pd.read_sql(q, db.engine)
@@ -41,14 +41,14 @@ def update_stock_price(code: str ):
 
 
 def update_group(code):
-        '''
-        Update and download data of all stocks in  a group.\n
+    """
+    Update and download data of all stocks in  a group.\n
 
-        `Warning: Stock table should be updated`
-        '''
+    `Warning: Stock table should be updated`
+    """
     stocks = db.session.query(Stocks.code).filter_by(group_code=code).all()
     if not stocks:
-        print('Make sure group has some entity on Stocks')
+        print("Make sure group has some entity on Stocks")
         return
     for i, stock in enumerate(stocks):
         update_stock_price(stock[0])
