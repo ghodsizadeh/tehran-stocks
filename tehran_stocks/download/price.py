@@ -42,9 +42,14 @@ def update_stock_price(code: str ):
 
 def update_group(code):
         '''
-        Update and download data of all stocks in  a group.
+        Update and download data of all stocks in  a group.\n
+
+        `Warning: Stock table should be updated`
         '''
     stocks = db.session.query(Stocks.code).filter_by(group_code=code).all()
+    if not stocks:
+        print('Make sure group has some entity on Stocks')
+        return
     for i, stock in enumerate(stocks):
         update_stock_price(stock[0])
         print(f"progress: {100*(i+1)/len(stocks):.1f}%", end="\r")
