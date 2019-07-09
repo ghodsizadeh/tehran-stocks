@@ -20,11 +20,12 @@ class Stocks(Base):
     baseVol = Column(Float)
     prices = relationship("StockPrice", backref="stock")
 
-    def price_df(self):
+    @property
+    def df(self):
         query = f"select * from stock_price where code = {self.code}"
         df = pd.read_sql(query, engine)
         df["date"] = pd.to_datetime(df["dtyyyymmdd"], format="%Y%m%d")
-        self.df = df
+        # self.df = df
         return df
 
     def update(self):
@@ -36,14 +37,7 @@ class Stocks(Base):
         except:
             return False
 
-    def check_price(self):
-        try:
-            self.df
-        except:
-            self.price_df()
-
     def summary(self):
-        self.check_price()
         df = self.df
         sdate = df.date.min().strftime("%Y%m%d")
         edate = df.date.max().strftime("%Y%m%d")
