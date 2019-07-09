@@ -15,8 +15,19 @@ Session.configure(bind=engine)
 session = Session()
 
 
+class ClassProperty(object):
+    def __init__(self, fget):
+        self.fget = fget
+
+    def __get__(self, owner_self, owner_cls):
+        return self.fget(owner_cls)
+
+    def __repr__(self):
+        return None
+
+
 class QueryMixin:
-    @classmethod
+    @ClassProperty
     def query(cls):
         return session.query(cls)
 

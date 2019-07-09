@@ -72,5 +72,5 @@ class StockPrice(Base):
     last = Column(Float)
 
     def __repr__(self):
-        return f"{self.stock.name}, {self.date}, {self.close:0.f}"
+        return f"{self.stock.name}, {self.date}, {self.close:.0f}"
 

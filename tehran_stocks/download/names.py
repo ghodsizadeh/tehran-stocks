@@ -38,7 +38,7 @@ def get_stock_detail(stock_id: str, group_id: int) -> "stock":
         int: number that represent group of stock
 
     """
-    exist = Stocks.query().filter_by(code=stock_id).first()
+    exist = Stocks.query.filter_by(code=stock_id).first()
     if exist:
         return "exist"
     url = "http://www.tsetmc.com/Loader.aspx?ParTree=151311&i={}".format(stock_id)
