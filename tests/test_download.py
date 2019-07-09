@@ -26,3 +26,8 @@ class TestStockDetail:
             assert data["code"] == SAIPA
         if isinstance(data, str):
             assert data == "exist"
+
+    def test_error_get_detail(self):
+        FAKE = 278496000000000
+        be_false = download.get_stock_detail(FAKE, 23)
+        assert not be_false, "it saves data that is not valid"

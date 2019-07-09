@@ -74,6 +74,8 @@ def get_stock_detail(stock_id: str, group_id: int) -> "stock":
     except:
         stock["estimatedEps"] = None
     stock["group_code"] = group_id
+    if stock["name"] == "',DEven='',LSecVal='',CgrValCot='',Flow='',InstrumentID='":
+        return False
     db.session.add(Stocks(**stock))
     try:
         db.session.commit()
