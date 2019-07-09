@@ -31,7 +31,7 @@ class Stocks(Base):
         from tehran_stocks import downloader
 
         try:
-            res =  downloader.update_stock_price(self.code)
+            res = downloader.update_stock_price(self.code)
             return res
         except:
             return False
@@ -52,6 +52,12 @@ class Stocks(Base):
         print(f"End date: {edate}")
         print(f"Total days: {len(df)}")
 
+    def __repr__(self):
+        return f"{self.title}-{self.name}-{self.group_name}"
+
+    def __str__(self):
+        return self.name
+
 
 class StockPrice(Base):
     __tablename__ = "stock_price"
@@ -70,4 +76,7 @@ class StockPrice(Base):
     per = Column(String)
     open = Column(Float)
     last = Column(Float)
+
+    def __repr__(self):
+        return self.stock.name
 
