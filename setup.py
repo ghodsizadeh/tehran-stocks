@@ -21,4 +21,5 @@ setup(
     install_requires=["pandas", "sqlalchemy"],
     zip_safe=False,
     python_requires=">=3.6",
+    scripts=["bin/ts-get"],
 )

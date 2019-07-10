@@ -1,0 +1,4 @@
+#!/usr/bin/env python
+
+import tehran_stocks as ts
+print(ts.Stocks.query.first())
