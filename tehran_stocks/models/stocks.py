@@ -25,6 +25,9 @@ class Stocks(Base):
         query = f"select * from stock_price where code = {self.code}"
         df = pd.read_sql(query, engine)
         df["date"] = pd.to_datetime(df["dtyyyymmdd"], format="%Y%m%d")
+        df = df.sort_values("date")
+        df.reset_index(drop=True, inplace=True)
+
         # self.df = df
         return df
 
