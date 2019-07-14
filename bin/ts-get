@@ -1,4 +1,29 @@
 #!/usr/bin/env python
 
 import tehran_stocks as ts
-print(ts.Stocks.query.first())
+from tehran_stocks import db
+import sys
+import os
+import pprint
+
+args = sys.argv
+if args[1] == "init":
+    if not os.path.isfile(db.db_path):
+        print("No database founded.")
+        ts.init_db()
+        ts.fill_db()
+    else:
+        print("Your database was initialized before ")
+
+elif args[1] == "update":
+    ts.get_all_price()
+elif args[1] == "group":
+    try:
+        code = int(args[2])
+        ts.update_group(code)
+        print("Done")
+    except:
+        print("please enter group code")
+
+elif args[1] == "get_groups":
+    pprint.pprint(ts.Stocks.get_group())

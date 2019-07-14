@@ -1,6 +1,6 @@
 import os
 
-from tehran_stocks import db, models, update_group
+from tehran_stocks import db, models, update_group, get_all_price
 from tehran_stocks.download import fill_stock_table
 
 
@@ -22,14 +22,15 @@ def fill_db():
     print("Stock table is available now, example:")
     print("from tehran_stocks import Stocks")
     print('stock =Stock.query.filter_by(name="کگل").first()')
-    a = input("do you want to download all price? [y,(n)]")
+    a = input("Do you want to download all price? [y,(n)]")
     if a == "y":
         print("Downloading price:")
-        tehran_stocks.get_all_price()
+        get_all_price()
     else:
         print("if  you want download all prices use tehran_stocks.get_all_price() ")
         print("if you want download price history of a specfic stock use: ")
         print("stock.update()")
         print("or use tehran_stocks.update_group(id) ")
         print("For more info go to:")
+        print("https://github.com/ghodsizadeh/tehran-stocks")
 

@@ -32,10 +32,10 @@ class Stocks(Base):
         return df
 
     def update(self):
-        from tehran_stocks import downloader
+        from tehran_stocks.download import update_stock_price
 
         try:
-            res = downloader.update_stock_price(self.code)
+            res = update_stock_price(self.code)
             return res
         except:
             return False
@@ -54,6 +54,15 @@ class Stocks(Base):
 
     def __str__(self):
         return self.name
+
+    @staticmethod
+    def get_group():
+        codes = (
+            session.query(Stocks.group_code, Stocks.group_name)
+            .group_by(Stocks.group_code)
+            .all()
+        )
+        return codes
 
 
 class StockPrice(Base):
