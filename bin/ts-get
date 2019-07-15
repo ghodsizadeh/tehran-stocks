@@ -1,10 +1,10 @@
 #!/usr/bin/env python
+import os
+import pprint
+import sys
 
 import tehran_stocks as ts
 from tehran_stocks import db
-import sys
-import os
-import pprint
 
 args = sys.argv
 if args[1] == "init":
