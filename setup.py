@@ -1,4 +1,5 @@
-from setuptools import setup
+from setuptools import setup, find_packages
+
 
 # read the contents of your README file
 from os import path
@@ -9,7 +10,7 @@ with open(path.join(THISDIRECTORY, "README.md")) as f:
 
 setup(
     name="tehran-stocks",
-    version="0.5.4",
+    version="0.5.6",
     description="DataDownloader for Tehran stock market",
     url="http://github.com/ghodsizadeh/tehran-stocks",
     author="Mehdi Ghodsizadeh",
@@ -17,7 +18,7 @@ setup(
     license="MIT",
     long_description=LONGDESC,
     long_description_content_type="text/markdown",
-    packages=["tehran_stocks"],
+    packages=find_packages(where="'tehran_stocks"),
     install_requires=["pandas", "sqlalchemy"],
     zip_safe=False,
     python_requires=">=3.6",
