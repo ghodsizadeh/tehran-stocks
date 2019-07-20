@@ -126,3 +126,4 @@ dmypy.json
 #project
 .sonarlint/
 .vscode/
+conda/
