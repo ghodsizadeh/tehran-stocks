@@ -10,7 +10,7 @@ with open(path.join(THISDIRECTORY, "README.md")) as f:
 
 setup(
     name="tehran-stocks",
-    version="0.5.6",
+    version="0.5.9",
     description="DataDownloader for Tehran stock market",
     url="http://github.com/ghodsizadeh/tehran-stocks",
     author="Mehdi Ghodsizadeh",
@@ -18,7 +18,8 @@ setup(
     license="MIT",
     long_description=LONGDESC,
     long_description_content_type="text/markdown",
-    packages=find_packages(where="'tehran_stocks"),
+    package_dir={"": "tehran_stocks"},
+    packages=find_packages(where="tehran_stocks"),
     install_requires=["pandas", "sqlalchemy"],
     zip_safe=False,
     python_requires=">=3.6",
