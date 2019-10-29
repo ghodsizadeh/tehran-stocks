@@ -20,8 +20,8 @@ setup(
     long_description_content_type="text/markdown",
     package_dir={"": "tehran_stocks"},
     packages=find_packages(where="tehran_stocks"),
-    install_requires=["pandas", "sqlalchemy"],
+    install_requires=["pandas", "sqlalchemy","requests"],
     zip_safe=False,
     python_requires=">=3.6",
-    scripts=["bin/ts-get"],
+    scripts=["bin/ts-get","bin/ts-get.bat"],
 )
