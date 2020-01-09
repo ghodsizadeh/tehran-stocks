@@ -18,10 +18,11 @@ setup(
     license="MIT",
     long_description=LONGDESC,
     long_description_content_type="text/markdown",
-    package_dir={"": "tehran_stocks"},
-    packages=find_packages(where="tehran_stocks"),
+    package_dir={"": "src"},
+    packages=['tehran_stocks','tehran_stocks.download','tehran_stocks.models','tehran_stocks.config'],
     install_requires=["wheel","pandas", "sqlalchemy", "requests"],
     zip_safe=False,
     python_requires=">=3.6",
     scripts=["bin/ts-get", "bin/ts-get.bat"],
+    include_package_data=True,
 )
