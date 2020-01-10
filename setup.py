@@ -9,7 +9,7 @@ with open(path.join(THISDIRECTORY, "README.md")) as f:
     LONGDESC = f.read()
 
 setup(
-    name="tehran-stocks",
+    name="tehran-stocks-ng",
     version="0.6.2",
     description="Data Downloader for Tehran stock market",
     url="http://github.com/gr8linux/tehran-stocks",

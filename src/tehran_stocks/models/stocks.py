@@ -19,20 +19,24 @@ class Stocks(Base):
     estimatedEps = Column(Float)
     baseVol = Column(Float)
     prices = relationship("StockPrice", backref="stock")
+    cached = False
 
     @property
     def df(self):
+        if self.cached == True :
+            return self.bf
         query = f"select * from stock_price where code = {self.code}"
         df = pd.read_sql(query, engine)
         if df.empty:
-            #self.update() # This code cause infinite loop 
+            self.cached = True
+            self.bf = df
             return df
         df["date"] = pd.to_datetime(df["dtyyyymmdd"], format="%Y%m%d")
         df = df.sort_values("date")
         df.reset_index(drop=True, inplace=True)
-
-        # self.df = df
-        return df
+        self.cached = True
+        self.bf = df
+        return self.bf
 
     def update(self):
         from tehran_stocks.download import update_stock_price
