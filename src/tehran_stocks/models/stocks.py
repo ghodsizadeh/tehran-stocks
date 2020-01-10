@@ -21,6 +21,9 @@ class Stocks(Base):
     prices = relationship("StockPrice", backref="stock")
     cached = False
     dfcounter = 0
+
+    def __init__ (self, name):
+        pass       
     @property
     def df(self):
         self.dfcounter+=1
@@ -32,10 +35,11 @@ class Stocks(Base):
         if df.empty:
             self.cached = True
             self.bf = df
-            return df
+            return self.bf
         df["date"] = pd.to_datetime(df["dtyyyymmdd"], format="%Y%m%d")
         df = df.sort_values("date")
         df.reset_index(drop=True, inplace=True)
+        df.set_index("date",inplace=True)
         self.cached = True
         self.bf = df
         return self.bf
@@ -94,4 +98,8 @@ class StockPrice(Base):
 
     def __repr__(self):
         return f"{self.stock.name}, {self.date}, {self.close:.0f}"
+
+def get_asset(name, start_date=None, end_date=None):
+    asset = Stocks.query.filter_by(name=name).first()
+    return asset
 

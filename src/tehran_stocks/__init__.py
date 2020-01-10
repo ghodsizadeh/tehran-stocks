@@ -9,7 +9,7 @@ from tehran_stocks.download import (
     update_group,
     update_stock_price,
 )
-from tehran_stocks.models import StockPrice, Stocks
+from tehran_stocks.models import StockPrice, Stocks, get_asset
 
 from .initializer import init_db, fill_db
 
