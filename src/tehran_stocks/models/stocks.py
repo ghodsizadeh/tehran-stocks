@@ -20,9 +20,11 @@ class Stocks(Base):
     baseVol = Column(Float)
     prices = relationship("StockPrice", backref="stock")
     cached = False
-
+    dfcounter = 0
     @property
     def df(self):
+        self.dfcounter+=1
+        #print(self.name,"=>",self.dfcounter)
         if self.cached == True :
             return self.bf
         query = f"select * from stock_price where code = {self.code}"
@@ -76,9 +78,9 @@ class StockPrice(Base):
     __tablename__ = "stock_price"
 
     id = Column(Integer, primary_key=True)
-    code = Column(String, ForeignKey("stocks.code"))
+    code = Column(String, ForeignKey("stocks.code"),index=True)
     ticker = Column(String)
-    date = Column("dtyyyymmdd", Integer)
+    date = Column("dtyyyymmdd", Integer,index=True)
     first = Column(Float)
     high = Column(Float)
     low = Column(Float)

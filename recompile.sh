@@ -5,7 +5,7 @@ pip -q  uninstall tehran-stocks-ng
 echo Clean the old compiled package
 rm -fr build dist
 echo Recompiling
-python setup.py -q bdist_wheel
+python setup.py -q bdist_wheel sdist
 
 echo Reinstallation
 cd dist
