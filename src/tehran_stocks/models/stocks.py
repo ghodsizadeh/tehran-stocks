@@ -24,10 +24,10 @@ class Stocks(Base):
 
     def __init__ (self, name):
         pass       
+    
     @property
     def df(self):
         self.dfcounter+=1
-        #print(self.name,"=>",self.dfcounter)
         if self.cached == True :
             return self.bf
         query = f"select * from stock_price where code = {self.code}"
@@ -43,6 +43,11 @@ class Stocks(Base):
         self.cached = True
         self.bf = df
         return self.bf
+
+    @property
+    def mpl(self):
+        self._mpl = self.df.rename(columns={"close":"Close","open":"Open","high":"High","low":"Low","vol":"Volume"})
+        return self._mpl 
 
     def update(self):
         from tehran_stocks.download import update_stock_price
@@ -99,7 +104,7 @@ class StockPrice(Base):
     def __repr__(self):
         return f"{self.stock.name}, {self.date}, {self.close:.0f}"
 
-def get_asset(name, start_date=None, end_date=None):
+def get_asset(name):
     asset = Stocks.query.filter_by(name=name).first()
     return asset
 
