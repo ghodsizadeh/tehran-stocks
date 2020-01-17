@@ -28,7 +28,7 @@ class Stocks(Base):
     @property
     def df(self):
         self._dfcounter+=1
-        if self._cached == True :
+        if self._cached:
             return self._df
         query = f"select * from stock_price where code = {self.code}"
         df = pd.read_sql(query, engine)
