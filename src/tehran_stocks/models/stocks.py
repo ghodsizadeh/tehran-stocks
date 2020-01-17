@@ -27,22 +27,22 @@ class Stocks(Base):
     
     @property
     def df(self):
-        self.dfcounter+=1
-        if self.cached == True :
-            return self.bf
+        self._dfcounter+=1
+        if self._cached == True :
+            return self._df
         query = f"select * from stock_price where code = {self.code}"
         df = pd.read_sql(query, engine)
         if df.empty:
-            self.cached = True
-            self.bf = df
-            return self.bf
+            self._cached = True
+            self._df = df
+            return self._df
         df["date"] = pd.to_datetime(df["dtyyyymmdd"], format="%Y%m%d")
         df = df.sort_values("date")
         df.reset_index(drop=True, inplace=True)
         df.set_index("date",inplace=True)
-        self.cached = True
-        self.bf = df
-        return self.bf
+        self._cached = True
+        self._df = df
+        return self._df
 
     @property
     def mpl(self):
