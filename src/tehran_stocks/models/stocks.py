@@ -19,8 +19,8 @@ class Stocks(Base):
     estimatedEps = Column(Float)
     baseVol = Column(Float)
     prices = relationship("StockPrice", backref="stock")
-    cached = False
-    dfcounter = 0
+    _cached = False
+    _dfcounter = 0
 
     def __init__ (self, name):
         pass       
