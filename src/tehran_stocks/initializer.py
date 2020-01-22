@@ -21,7 +21,7 @@ def fill_db():
     fill_stock_table()
     print("Stock table is available now, example:")
     print("from tehran_stocks import Stocks")
-    print('stock =Stock.query.filter_by(name="کگل").first()')
+    print('stock =Stocks.query.filter_by(name="کگل").first()')
     a = input("Do you want to download all price? [y,(n)]")
     if a == "y":
         print("Downloading price:")

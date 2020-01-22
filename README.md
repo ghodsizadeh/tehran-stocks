@@ -24,7 +24,7 @@ A python package that helps to access TCCIM stock price history, Using OOP Inter
 ## 0 - Install
 
 ```bash
-pip install tehran_stocks
+pip install tehran_stocks_ng
 ```
 
 ## 1- Initialization

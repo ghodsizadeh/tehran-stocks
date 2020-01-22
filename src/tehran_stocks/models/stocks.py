@@ -19,20 +19,35 @@ class Stocks(Base):
     estimatedEps = Column(Float)
     baseVol = Column(Float)
     prices = relationship("StockPrice", backref="stock")
+    _cached = False
+    _dfcounter = 0
 
+    def __init__ (self, name):
+        pass       
+    
     @property
     def df(self):
+        self._dfcounter+=1
+        if self._cached:
+            return self._df
         query = f"select * from stock_price where code = {self.code}"
         df = pd.read_sql(query, engine)
         if df.empty:
-            self.update()
-            return self.df
+            self._cached = True
+            self._df = df
+            return self._df
         df["date"] = pd.to_datetime(df["dtyyyymmdd"], format="%Y%m%d")
         df = df.sort_values("date")
         df.reset_index(drop=True, inplace=True)
+        df.set_index("date",inplace=True)
+        self._cached = True
+        self._df = df
+        return self._df
 
-        # self.df = df
-        return df
+    @property
+    def mpl(self):
+        self._mpl = self.df.rename(columns={"close":"Close","open":"Open","high":"High","low":"Low","vol":"Volume"})
+        return self._mpl 
 
     def update(self):
         from tehran_stocks.download import update_stock_price
@@ -72,9 +87,9 @@ class StockPrice(Base):
     __tablename__ = "stock_price"
 
     id = Column(Integer, primary_key=True)
-    code = Column(String, ForeignKey("stocks.code"))
+    code = Column(String, ForeignKey("stocks.code"),index=True)
     ticker = Column(String)
-    date = Column("dtyyyymmdd", Integer)
+    date = Column("dtyyyymmdd", Integer,index=True)
     first = Column(Float)
     high = Column(Float)
     low = Column(Float)
@@ -88,4 +103,8 @@ class StockPrice(Base):
 
     def __repr__(self):
         return f"{self.stock.name}, {self.date}, {self.close:.0f}"
+
+def get_asset(name):
+    asset = Stocks.query.filter_by(name=name).first()
+    return asset
 
