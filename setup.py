@@ -10,7 +10,7 @@ with open(path.join(THISDIRECTORY, "README.md")) as f:
 
 setup(
     name="tehran-stocks-ng",
-    version="0.6.3",
+    version="0.6.4",
     description="Data Downloader for Tehran stock market",
     url="http://github.com/gr8linux/tehran-stocks",
     author="Mehdi Ghodsizadeh,gr8linux",
