@@ -110,7 +110,8 @@ def get_asset(name):
         cname = list(name)
         cname[name.find('ی')] = 'ي'
         name = ''.join(cname)
-    if(name.find('ک')>=0)    
+    if(name.find('ک')>=0):
+        cname = list(name)
         cname[name.find('ک')] = 'ك'
         name = ''.join(cname)
     asset = Stocks.query.filter_by(name=name).first()
