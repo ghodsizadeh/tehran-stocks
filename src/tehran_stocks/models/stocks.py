@@ -22,8 +22,8 @@ class Stocks(Base):
     _cached = False
     _dfcounter = 0
 
-    def __init__ (self, name):
-        pass       
+    def __init__ (self, **kwargs):
+        super().__init__(**kwargs)
     
     @property
     def df(self):
