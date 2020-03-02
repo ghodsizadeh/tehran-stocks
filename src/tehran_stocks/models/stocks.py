@@ -90,6 +90,7 @@ class StockPrice(Base):
     code = Column(String, ForeignKey("stocks.code"),index=True)
     ticker = Column(String)
     date = Column("dtyyyymmdd", Integer,index=True)
+    date_shamsi = Column(String)
     first = Column(Float)
     high = Column(Float)
     low = Column(Float)
