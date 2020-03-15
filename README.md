@@ -123,7 +123,7 @@ Total days: 2987
 - [x] Create Database
 - [x] Download Data
 - [x] CommandLine Support
-- [ ] Jalali Support
+- [x] Jalali Support
 
 # Donation❤️
 
