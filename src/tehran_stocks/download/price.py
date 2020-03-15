@@ -1,5 +1,7 @@
 import re
 import time
+from jdatetime import date
+from datetime import datetime
 
 import pandas as pd
 import requests
@@ -11,7 +13,7 @@ from tehran_stocks.models import StockPrice, Stocks
 def update_stock_price(code: str):
     """
     Update (or download for the first time) Stock prices
-    
+
 
     params:
     ----------------
@@ -33,7 +35,18 @@ def update_stock_price(code: str):
         df = pd.read_csv(url.format(code))
         df.columns = [i[1:-1].lower() for i in df.columns]
         df["code"] = code
-        df = df[~df.dtyyyymmdd.isin(temp.date)]
+        df["date_shamsi"] = ""
+        
+        for index, row in df.iterrows():
+            str_date = str(df.at[index, "dtyyyymmdd"])
+            date_shamsi = date.fromgregorian(
+                day=int(str_date[-2:]), 
+                month=int(str_date[4:6]), 
+                year=int(str_date[:4])
+                ).strftime("%Y/%m/%d")
+            df.at[index, "date_shamsi"] = date_shamsi
+
+        df = df[~df.dtyyyymmdd.isin(temp.date)]        
         df.to_sql("stock_price", db.engine, if_exists="append", index=False)
         return True, code
     except Exception as e:
@@ -58,8 +71,8 @@ def update_group(code):
 def get_all_price():
     codes = db.session.query(db.distinct(Stocks.group_code)).all()
     for i, code in enumerate(codes):
-        print(f"                         total progress: {100*(i+1)/len(codes):.2f}%", end="\r")
+        print(
+            f"                         total progress: {100*(i+1)/len(codes):.2f}%", end = "\r")
         update_group(code[0])
 
     print("Download Finished.")
-

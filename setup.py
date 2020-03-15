@@ -25,7 +25,7 @@ setup(
         "tehran_stocks.models",
         "tehran_stocks.config",
     ],
-    install_requires=["wheel", "pandas", "sqlalchemy", "requests"],
+    install_requires=["wheel", "pandas", "sqlalchemy", "requests", "jdatetime"],
     zip_safe=False,
     python_requires=">=3.6",
     scripts=["bin/ts-get", "bin/ts-get.bat"],
