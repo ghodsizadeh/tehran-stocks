@@ -7,7 +7,7 @@
 
 <!-- ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/tehran-stocks.svg) -->
 
-A python package that helps to access TCCIM stock price history, Using OOP Interface
+A python package that helps to access TSETMC stock price history, Using OOP Interface
 
 ## Features
 
