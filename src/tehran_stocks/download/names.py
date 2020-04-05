@@ -44,7 +44,7 @@ def get_stock_detail(stock_id: str, group_id: int) -> "stock":
     url = "http://www.tsetmc.com/Loader.aspx?ParTree=151311&i={}".format(stock_id)
     r = requests.get(url)
     stock = {"code": stock_id}
-    stock["instId"] = re.findall(r"InstrumentID='([\w\d]*)',", r.text)[0]
+    stock["instId"] = re.findall(r"InstrumentID='([\w\d]*)|$',", r.text)[0]
     stock["insCode"] = (
         stock_id if re.findall(r"InsCode='(\d*)',", r.text)[0] == stock_id else 0
     )
@@ -56,7 +56,7 @@ def get_stock_detail(stock_id: str, group_id: int) -> "stock":
     try:
         stock["group_name"] = re.findall(r"LSecVal='([\D]*)',", r.text)[0]
     except:
-        return        
+        return
     try:
         stock["title"] = re.findall(r"Title='([\D]*)',", r.text)[0]
     except:

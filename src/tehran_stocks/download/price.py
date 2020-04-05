@@ -1,6 +1,6 @@
 import re
 import time
-from jdatetime import date
+from jdatetime import date as jdate
 from datetime import datetime
 
 import pandas as pd
@@ -11,14 +11,14 @@ from tehran_stocks.models import StockPrice, Stocks
 
 
 def convert_to_shamsi(date):
-    date_shamsi = date.fromgregorian(
+    date = str(date)
+    date_shamsi = jdate.fromgregorian(
         day=int(date[-2:]), month=int(date[4:6]), year=int(date[:4])
     ).strftime("%Y/%m/%d")
     return date_shamsi
 
 
 def update_stock_price(code: str):
-    print("hello")
     """
     Update (or download for the first time) Stock prices
 
@@ -41,7 +41,6 @@ def update_stock_price(code: str):
         temp = pd.read_sql(q, db.engine)
         url = "http://www.tsetmc.com/tsev2/data/Export-txt.aspx?t=i&a=1&b=0&i={}"
         df = pd.read_csv(url.format(code))
-        print(df.head(1))
         df.columns = [i[1:-1].lower() for i in df.columns]
         df["code"] = code
         df["date_shamsi"] = ""
@@ -54,7 +53,7 @@ def update_stock_price(code: str):
         #         year=int(str_date[:4])
         #         ).strftime("%Y/%m/%d")
         #     df.at[index, "date_shamsi"] = date_shamsi
-        df["date_shamsi"] = df["dtyyyymmdd"].apply()
+        df["date_shamsi"] = df["dtyyyymmdd"].apply(convert_to_shamsi)
 
         df = df[~df.dtyyyymmdd.isin(temp.date)]
         df.to_sql("stock_price", db.engine, if_exists="append", index=False)
