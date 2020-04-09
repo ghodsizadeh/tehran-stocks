@@ -32,6 +32,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   listItem: {
     marginLeft: "-30px",
+    textAlign: theme.direction === "rtl" ? "right" : "left",
   },
   bullet: {
     color: "black",
@@ -48,7 +49,12 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 function ShowFeatures() {
   const { t } = useTranslation();
-  const features: Array<string> = ["a", "b", "c"];
+  const features: Array<string> = [
+    t("b_fast"),
+    t("b_real"),
+    t("b_pandas_ready"),
+    t("b_exportable"),
+  ];
   const classes = useStyles();
   return (
     <List>

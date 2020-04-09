@@ -7,33 +7,33 @@ module.exports = {
     // Use ! to filter out files or directories
     "!src/**/*.spec.{js,jsx}",
     "!src/i18n/**",
-    "!**/node_modules/**"
+    "!**/node_modules/**",
   ],
   output: "./",
   options: {
     debug: true,
     func: {
       list: ["i18next.t", "i18n.t", "t"],
-      extensions: [".js", ".jsx"]
+      extensions: [".js", ".jsx"],
     },
     // trans: false,
     lngs: ["en", "fa"],
-    ns: ["locale", "resource"],
+    ns: ["resource"],
     defaultLng: "en",
     defaultNs: "resource",
     defaultValue: "__STRING_NOT_TRANSLATED__",
     resource: {
-      loadPath: "i18n/{{lng}}/{{ns}}.json",
-      savePath: "i18n/{{lng}}/{{ns}}.json",
+      loadPath: "src/translation/{{lng}}/{{ns}}.json",
+      savePath: "src/translation/{{lng}}/{{ns}}.json",
       jsonIndent: 2,
-      lineEnding: "\n"
+      lineEnding: "\n",
     },
-    nsSeparator: false, // namespace separator
-    keySeparator: false, // key separator
+    nsSeparator: true, // namespace separator
+    keySeparator: true, // key separator
     interpolation: {
       prefix: "{{",
-      suffix: "}}"
-    }
+      suffix: "}}",
+    },
   },
   transform: function customTransform(file, enc, done) {
     "use strict";
@@ -48,8 +48,8 @@ module.exports = {
         parser.set(
           key,
           Object.assign({}, options, {
-            nsSeparator: false,
-            keySeparator: false
+            nsSeparator: true,
+            keySeparator: true,
           })
         );
         ++count;
@@ -65,5 +65,5 @@ module.exports = {
     }
 
     done();
-  }
+  },
 };

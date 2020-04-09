@@ -1,6 +1,5 @@
 // @flow
 import AppBar from "@material-ui/core/AppBar";
-import Button from "@material-ui/core/Button";
 import IconButton from "@material-ui/core/IconButton";
 import { makeStyles, Theme } from "@material-ui/core/styles";
 import Toolbar from "@material-ui/core/ToolBar";
@@ -13,20 +12,21 @@ import CardGiftcardIcon from "@material-ui/icons/CardGiftcard";
 import React from "react";
 import type { Node } from "react";
 import { useTranslation } from "react-i18next";
+import { ChangeLanguage } from "./ChangeLanguage";
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
-    flexGrow: 1
+    flexGrow: 1,
   },
 
   title: {
-    flexGrow: 1
-  }
+    flexGrow: 1,
+  },
 }));
 
 type SLinkProps = {
   icon: Node,
-  link: string
+  link: string,
 };
 function SocialLink(props: SLinkProps) {
   const { link, icon } = props;
@@ -37,16 +37,6 @@ function SocialLink(props: SLinkProps) {
   );
 }
 
-function ChangeLanguage() {
-  const { i18n } = useTranslation();
-  const { language } = i18n;
-  const new_language: string = language === "fa" ? "en" : "fa";
-  return (
-    <Button color="inherit" onClick={() => i18n.changeLanguage(new_language)}>
-      <Typography>EN/FA</Typography>
-    </Button>
-  );
-}
 function TheAppBar() {
   const classes = useStyles();
   const { t } = useTranslation();

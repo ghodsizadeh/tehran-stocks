@@ -1,5 +1,5 @@
 {
-  "name": "tse_python",
+  "name": "tehran_stocks",
   "version": "0.1.0",
   "homepage": "https://ghodsizadeh.github.io/tehran-stocks",
   "private": true,
@@ -15,7 +15,8 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-i18next": "^11.3.4",
-    "react-scripts": "3.4.1"
+    "react-scripts": "3.4.1",
+    "reactn": "^2.2.7"
   },
   "scripts": {
     "flow": "flow",

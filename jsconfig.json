@@ -1,0 +1,6 @@
+{
+  "compilerOptions": {
+    "baseUrl": "Docs/src"
+  },
+  "include": ["src", "i18.js"]
+}

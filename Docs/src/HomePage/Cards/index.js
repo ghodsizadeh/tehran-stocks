@@ -13,9 +13,9 @@ export default function Cards() {
         <Grid item xs={12} sm={4}>
           <MainCard
             Icon={<HelpIcon />}
-            title={t("start.title")}
-            subheader={t("start.subheader")}
-            content={t("start.content")}
+            title={t("titleStart")}
+            subheader={t("subheaderStart")}
+            content={t("contentStart")}
           />
         </Grid>
         <Grid item xs={12} sm={4}>
