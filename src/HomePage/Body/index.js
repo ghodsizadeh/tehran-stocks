@@ -8,7 +8,7 @@ import {
   List,
   ListItem,
   ListItemIcon,
-  ListItemText
+  ListItemText,
 } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 
@@ -20,27 +20,30 @@ const useStyles = makeStyles((theme: Theme) => ({
     flex: 1,
     flexDirection: "column",
     marginBottom: "10px",
-    marginTop: "10px"
+    marginTop: "10px",
   },
   header: {
-    margin: "8px"
+    margin: "8px",
     // width: "55%"
   },
   content: {
     margin: "10px",
-    width: "60%"
+    width: "60%",
   },
   listItem: {
-    marginLeft: "-30px"
+    marginLeft: "-30px",
   },
   bullet: {
     color: "black",
-    fontSize: "14px"
+    fontSize: "14px",
   },
   image: {
     borderRadius: "50px",
-    height: "80%"
-  }
+    // paddingLeft: "30px",
+    // paddingRight: "40px",
+    height: "auto",
+    maxWidth: "90%",
+  },
 }));
 
 function ShowFeatures() {
@@ -49,7 +52,7 @@ function ShowFeatures() {
   const classes = useStyles();
   return (
     <List>
-      {features.map(item => (
+      {features.map((item) => (
         <ListItem key={item}>
           <ListItemIcon>
             <Bullet className={classes.bullet} size={10} color="black" />
