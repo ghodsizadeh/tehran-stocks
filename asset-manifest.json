@@ -1,22 +1,22 @@
 {
   "files": {
-    "main.css": "/tehran-stocks/static/css/main.5f361e03.chunk.css",
-    "main.js": "/tehran-stocks/static/js/main.9dac2518.chunk.js",
-    "main.js.map": "/tehran-stocks/static/js/main.9dac2518.chunk.js.map",
-    "runtime-main.js": "/tehran-stocks/static/js/runtime-main.6fd4b4e9.js",
-    "runtime-main.js.map": "/tehran-stocks/static/js/runtime-main.6fd4b4e9.js.map",
-    "static/js/2.c7b5ad29.chunk.js": "/tehran-stocks/static/js/2.c7b5ad29.chunk.js",
-    "static/js/2.c7b5ad29.chunk.js.map": "/tehran-stocks/static/js/2.c7b5ad29.chunk.js.map",
+    "main.css": "/tehran-stocks/static/css/main.050523cc.chunk.css",
+    "main.js": "/tehran-stocks/static/js/main.c6166a9b.chunk.js",
+    "main.js.map": "/tehran-stocks/static/js/main.c6166a9b.chunk.js.map",
+    "runtime-main.js": "/tehran-stocks/static/js/runtime-main.aa545fd1.js",
+    "runtime-main.js.map": "/tehran-stocks/static/js/runtime-main.aa545fd1.js.map",
+    "static/js/2.4af723e6.chunk.js": "/tehran-stocks/static/js/2.4af723e6.chunk.js",
+    "static/js/2.4af723e6.chunk.js.map": "/tehran-stocks/static/js/2.4af723e6.chunk.js.map",
     "index.html": "/tehran-stocks/index.html",
-    "precache-manifest.ee41f5f8e65c270fc3507e405ac7136d.js": "/tehran-stocks/precache-manifest.ee41f5f8e65c270fc3507e405ac7136d.js",
+    "precache-manifest.9337feeeae1024aed7aad9f0c9298eb0.js": "/tehran-stocks/precache-manifest.9337feeeae1024aed7aad9f0c9298eb0.js",
     "service-worker.js": "/tehran-stocks/service-worker.js",
-    "static/css/main.5f361e03.chunk.css.map": "/tehran-stocks/static/css/main.5f361e03.chunk.css.map",
-    "static/js/2.c7b5ad29.chunk.js.LICENSE.txt": "/tehran-stocks/static/js/2.c7b5ad29.chunk.js.LICENSE.txt"
+    "static/css/main.050523cc.chunk.css.map": "/tehran-stocks/static/css/main.050523cc.chunk.css.map",
+    "static/js/2.4af723e6.chunk.js.LICENSE.txt": "/tehran-stocks/static/js/2.4af723e6.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
-    "static/js/runtime-main.6fd4b4e9.js",
-    "static/js/2.c7b5ad29.chunk.js",
-    "static/css/main.5f361e03.chunk.css",
-    "static/js/main.9dac2518.chunk.js"
+    "static/js/runtime-main.aa545fd1.js",
+    "static/js/2.4af723e6.chunk.js",
+    "static/css/main.050523cc.chunk.css",
+    "static/js/main.c6166a9b.chunk.js"
   ]
 }

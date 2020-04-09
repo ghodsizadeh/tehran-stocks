@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/tehran-stocks/precache-manifest.ee41f5f8e65c270fc3507e405ac7136d.js"
+  "/tehran-stocks/precache-manifest.9337feeeae1024aed7aad9f0c9298eb0.js"
 );
 
 self.addEventListener('message', (event) => {
