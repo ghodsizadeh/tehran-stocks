@@ -1,5 +1,5 @@
 const Global = {
-  language: "en",
+  language: "fa",
 };
 
 export default Global;

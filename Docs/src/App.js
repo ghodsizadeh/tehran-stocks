@@ -12,7 +12,6 @@ function App() {
   const [language] = useGlobal("language");
 
   const theme: Theme = language === "en" ? ltrTheme : rtlTheme;
-  console.log("ll", language, theme.direction, theme.typography.fontSize);
 
   return (
     <ThemeProvider theme={theme}>

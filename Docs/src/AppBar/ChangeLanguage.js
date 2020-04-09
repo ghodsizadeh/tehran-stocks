@@ -10,7 +10,8 @@ function change_body(oldlang, setLang) {
   if (lang !== oldlang) {
     setLang(lang);
   }
-  document.body.setAttribute("dir", newDirection);
+  const body: ?HTMLElement = document.body;
+  body && body.setAttribute("dir", newDirection);
 }
 export function ChangeLanguage() {
   const { i18n } = useTranslation();

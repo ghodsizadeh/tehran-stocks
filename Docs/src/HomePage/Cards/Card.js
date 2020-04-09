@@ -12,10 +12,11 @@ type Props = {
   subheader?: string,
   content: string,
   actions: string,
+  children: Node,
 };
 
 export default function MainCard(props: Props) {
-  const { Icon, title, subheader, content, actions } = props;
+  const { Icon, title, subheader, content, actions, children } = props;
   return (
     <Card>
       <CardHeader
@@ -28,6 +29,7 @@ export default function MainCard(props: Props) {
         <Typography variant="body2" color="textSecondary" component="p">
           {content}
         </Typography>
+        {children}
       </CardContent>
       <CardActions>
         {actions}

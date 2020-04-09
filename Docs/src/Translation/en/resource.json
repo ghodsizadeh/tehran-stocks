@@ -10,5 +10,12 @@
   "contentCoffee": "__STRING_NOT_TRANSLATED__",
   "titleStart": "__STRING_NOT_TRANSLATED__",
   "subheaderStart": "__STRING_NOT_TRANSLATED__",
-  "contentStart": "__STRING_NOT_TRANSLATED__"
+  "contentStart": "__STRING_NOT_TRANSLATED__",
+  "b_fast": "__STRING_NOT_TRANSLATED__",
+  "b_real": "__STRING_NOT_TRANSLATED__",
+  "b_pandas_ready": "__STRING_NOT_TRANSLATED__",
+  "b_exportable": "__STRING_NOT_TRANSLATED__",
+  "virgol": "<0>Hello<1>site</1>follow</0>",
+  "github": "<0>pregit<1>gitsite</1>postgit</0>",
+  "coffeeShop": "<0>precoffe<1>coffelink</1>postcoffes</0>"
 }

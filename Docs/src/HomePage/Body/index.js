@@ -61,7 +61,7 @@ function ShowFeatures() {
       {features.map((item) => (
         <ListItem key={item}>
           <ListItemIcon>
-            <Bullet className={classes.bullet} size={10} color="black" />
+            <Bullet className={classes.bullet} size={10} />
           </ListItemIcon>
           <ListItemText className={classes.listItem} primary={t(item)} />
         </ListItem>

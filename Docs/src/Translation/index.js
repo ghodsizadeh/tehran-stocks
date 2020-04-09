@@ -14,7 +14,7 @@ i18n
         translation: fa_dict,
       },
     },
-    lng: "en",
+    lng: "fa",
     fallbackLng: ["en", "fa"],
 
     interpolation: {
