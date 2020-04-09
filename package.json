@@ -1,0 +1,50 @@
+{
+  "name": "tse_python",
+  "version": "0.1.0",
+  "homepage": "https://ghodsizadeh.github.io/tehran-stocks",
+  "private": true,
+  "dependencies": {
+    "@material-ui/core": "^4.9.8",
+    "@material-ui/icons": "^4.9.1",
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.3.2",
+    "@testing-library/user-event": "^7.1.2",
+    "flow-bin": "^0.121.0",
+    "gh-pages": "^2.2.0",
+    "i18next": "^19.3.4",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-i18next": "^11.3.4",
+    "react-scripts": "3.4.1"
+  },
+  "scripts": {
+    "flow": "flow",
+    "predeploy": "yarn build",
+    "deploy": "gh-pages -d build",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.9.0",
+    "@babel/preset-flow": "^7.9.0",
+    "i18next-scanner": "^2.11.0"
+  }
+}
