@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/tehran-stocks/static/css/main.050523cc.chunk.css",
-    "main.js": "/tehran-stocks/static/js/main.c6166a9b.chunk.js",
-    "main.js.map": "/tehran-stocks/static/js/main.c6166a9b.chunk.js.map",
+    "main.js": "/tehran-stocks/static/js/main.64539dd7.chunk.js",
+    "main.js.map": "/tehran-stocks/static/js/main.64539dd7.chunk.js.map",
     "runtime-main.js": "/tehran-stocks/static/js/runtime-main.aa545fd1.js",
     "runtime-main.js.map": "/tehran-stocks/static/js/runtime-main.aa545fd1.js.map",
     "static/js/2.4af723e6.chunk.js": "/tehran-stocks/static/js/2.4af723e6.chunk.js",
     "static/js/2.4af723e6.chunk.js.map": "/tehran-stocks/static/js/2.4af723e6.chunk.js.map",
     "index.html": "/tehran-stocks/index.html",
-    "precache-manifest.9337feeeae1024aed7aad9f0c9298eb0.js": "/tehran-stocks/precache-manifest.9337feeeae1024aed7aad9f0c9298eb0.js",
+    "precache-manifest.74e95b44e821de384687a9e62a358197.js": "/tehran-stocks/precache-manifest.74e95b44e821de384687a9e62a358197.js",
     "service-worker.js": "/tehran-stocks/service-worker.js",
     "static/css/main.050523cc.chunk.css.map": "/tehran-stocks/static/css/main.050523cc.chunk.css.map",
     "static/js/2.4af723e6.chunk.js.LICENSE.txt": "/tehran-stocks/static/js/2.4af723e6.chunk.js.LICENSE.txt"
@@ -17,6 +17,6 @@
     "static/js/runtime-main.aa545fd1.js",
     "static/js/2.4af723e6.chunk.js",
     "static/css/main.050523cc.chunk.css",
-    "static/js/main.c6166a9b.chunk.js"
+    "static/js/main.64539dd7.chunk.js"
   ]
 }

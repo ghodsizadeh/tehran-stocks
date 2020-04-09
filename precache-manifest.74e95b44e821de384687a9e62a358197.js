@@ -1,10 +1,10 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "65cf970a8533ea64d7abf4afb0099cbd",
+    "revision": "15fea16782d8192c7231d6968d1b1331",
     "url": "/tehran-stocks/index.html"
   },
   {
-    "revision": "e5557389842e4f51d5d3",
+    "revision": "fa88a7fb67e2b718d353",
     "url": "/tehran-stocks/static/css/main.050523cc.chunk.css"
   },
   {
@@ -16,8 +16,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/tehran-stocks/static/js/2.4af723e6.chunk.js.LICENSE.txt"
   },
   {
-    "revision": "e5557389842e4f51d5d3",
-    "url": "/tehran-stocks/static/js/main.c6166a9b.chunk.js"
+    "revision": "fa88a7fb67e2b718d353",
+    "url": "/tehran-stocks/static/js/main.64539dd7.chunk.js"
   },
   {
     "revision": "e6836ba139f5c7989847",
