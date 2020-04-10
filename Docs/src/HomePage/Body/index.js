@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   content: {
     margin: "10px",
-    width: "60%",
+    // width: "60%",
   },
   listItem: {
     marginLeft: "-30px",
