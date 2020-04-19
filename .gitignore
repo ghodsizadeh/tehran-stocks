@@ -127,3 +127,4 @@ dmypy.json
 .sonarlint/
 .vscode/
 conda/
+node_modules
