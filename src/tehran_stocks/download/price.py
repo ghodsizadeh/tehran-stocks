@@ -39,11 +39,27 @@ def update_stock_price(code: str):
     try:
         q = f"select dtyyyymmdd as date from stock_price where code = {code}"
         temp = pd.read_sql(q, db.engine)
-        url = "http://www.tsetmc.com/tsev2/data/Export-txt.aspx?t=i&a=1&b=0&i={}"
-        df = pd.read_csv(url.format(code))
+        
+        now = datetime.now().strftime("%Y%m%d")
+
+        qMaxDate=f"select max(dtyyyymmdd) as date from stock_price where code = {code}"
+        maxdate = pd.read_sql(qMaxDate, db.engine)
+        lastDate=(maxdate.date.iat[0])
+        try:
+            if lastDate is None:#no any record added in database
+                url = f"http://www.tsetmc.com/tse/data/Export-txt.aspx?a=InsTrade&InsCode={code}&DateFrom=20000101&DateTo={now}&b=0"
+            elif (str(lastDate)<now):   #need to updata new price data
+                url = f"http://www.tsetmc.com/tse/data/Export-txt.aspx?a=InsTrade&InsCode={code}&DateFrom={str(lastDate)}&DateTo={now}&b=0"
+            else:                #The price data for this code is updateed
+                return
+        except Exception as e:
+            print('Error on formating price:'+ str(e))
+        
+        df = pd.read_csv(url)
         df.columns = [i[1:-1].lower() for i in df.columns]
         df["code"] = code
         df["date_shamsi"] = ""
+
 
         # for index, row in df.iterrows():
         #     str_date = str(df.at[index, "dtyyyymmdd"])
