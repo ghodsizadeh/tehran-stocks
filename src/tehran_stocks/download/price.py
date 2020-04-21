@@ -87,3 +87,23 @@ def get_all_price():
         update_group(code[0])
 
     print("Download Finished.")
+    
+def export_stocks_Price_To_CSV():
+    home = str(Path.home())
+    csvPath = os.path.join(home + "/tse/" + "/csv/")
+    os.makedirs(csvPath,exist_ok=True)
+
+
+    stocks = db.session.query(Stocks).all()
+    for i,stock in enumerate(stocks):
+        print(f"Exportin Stocks Price to CSV file: {100*(i+1)/len(stocks):.1f}%", end="\r")
+        q=f"SELECT * FROM stock_price  WHERE code='{stock.code}'"
+        stock_Price = pd.read_sql(q, db.engine)
+        if stock_Price.empty:
+            pass
+        else:
+            filename=stock.name  
+            path=f'{csvPath}{filename}.csv'  
+            stock_Price.to_csv (path, index = None, header=True)
+    
+
