@@ -3,7 +3,7 @@ import re
 import time
 import tehran_stocks.config as db
 from tehran_stocks.models import Stocks
-
+from tenacity import retry, retry_if_exception_type, stop_after_attempt
 
 def get_stock_ids(group):
     url = "http://www.tsetmc.com/tsev2/data/InstValue.aspx?g={}&t=g&s=0"
@@ -88,6 +88,10 @@ def get_stock_detail(stock_id: str, group_id: int) -> "stock":
     return stock
 
 
+"""
+ #@retry --> retrying function whenever an Exception occurs until a value is returned
+"""
+@retry(retry=retry_if_exception_type(requests.exceptions.RequestException),stop=stop_after_attempt(1000))
 def fill_stock_table():
     """
     Download Stock Table,
