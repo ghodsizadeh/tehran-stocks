@@ -56,6 +56,13 @@ def update_stock_price(code: str):
         df["date_shamsi"] = df["dtyyyymmdd"].apply(convert_to_shamsi)
 
         df = df[~df.dtyyyymmdd.isin(temp.date)]
+        # get haghighi-hogughi information for per stock
+        url = f"http://www.tsetmc.com/tsev2/data/clienttype.aspx?i={code}"
+        names = ["dtyyyymmdd", "T-hagh-kharid", "T-hogh-kharid", "T-hagh-forush", "T-hogh-forush", ",H-hagh-kharid",
+                 "H-hogh-kharid", "H-hagh-forush", "H-hogh-forush", "A-hagh-hkarid", "A-hogh-hkarid", "A-hagh-forush",
+                 ",A-hogh-forush"]
+        hagh_hugh_df = pd.read_csv(url, sep=",", lineterminator=";", names=names)
+        df = df.merge(hagh_hugh_df, on=['dtyyyymmdd'])
         df.to_sql("stock_price", db.engine, if_exists="append", index=False)
         return True, code
     except Exception as e:
