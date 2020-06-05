@@ -128,3 +128,4 @@ dmypy.json
 .vscode/
 conda/
 node_modules
+/.idea
