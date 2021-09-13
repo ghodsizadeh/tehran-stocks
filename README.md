@@ -7,7 +7,7 @@
 
 <!-- ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/tehran-stocks.svg) -->
 
-A python package that helps to access TCCIM stock price history, Using OOP Interface
+A python package that helps to access TSETMC stock price history, Using OOP Interface
 
 ## Features
 
@@ -24,7 +24,7 @@ A python package that helps to access TCCIM stock price history, Using OOP Inter
 ## 0 - Install
 
 ```bash
-pip install tehran_stocks_ng
+pip install tehran_stocks
 ```
 
 ## 1- Initialization
@@ -123,4 +123,15 @@ Total days: 2987
 - [x] Create Database
 - [x] Download Data
 - [x] CommandLine Support
-- [ ] Jalali Support
+- [x] Jalali Support
+
+# Donation❤️
+
+If you like this package you can buy me a cup of coffee ☕️.
+
+You can pay using آپ Application by scanning following qrcode in the application or entering code `95656781`:
+
+![NeshanPardakht](qrcode.png "95656781")
+
+Or donate using [IDPAY](https://idpay.ir/ghodsizadeh)
+

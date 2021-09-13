@@ -5,9 +5,9 @@ import tehran_stocks.config as db
 from tehran_stocks.models import Stocks
 
 
-def get_stock_ids(group):
-    url = "http://www.tsetmc.com/tsev2/data/InstValue.aspx?g={}&t=g&s=0"
-    r = requests.get(url.format(group))
+def get_stock_ids():
+    url = "http://tsetmc.com/tsev2/data/MarketWatchPlus.aspx"
+    r = requests.get(url)
     ids = set(re.findall(r"\d{15,20}", r.text))
     return list(ids)
 
@@ -22,7 +22,7 @@ def get_stock_groups():
     return groups
 
 
-def get_stock_detail(stock_id: str, group_id: int) -> "stock":
+def get_stock_detail(stock_id: str) -> "stock":
     """
     Dowload stocks detail and save them to the database.
     better not use it alone.
@@ -38,20 +38,21 @@ def get_stock_detail(stock_id: str, group_id: int) -> "stock":
         int: number that represent group of stock
 
     """
-    exist = Stocks.query.filter_by(code=stock_id).first()
-    if exist:
-        return "exist"
+    
     url = "http://www.tsetmc.com/Loader.aspx?ParTree=151311&i={}".format(stock_id)
     r = requests.get(url)
     stock = {"code": stock_id}
-    stock["group_name"] = re.findall(r"LSecVal='([\D]*)',", r.text)[0]
-    stock["instId"] = re.findall(r"InstrumentID='([\w\d]*)',", r.text)[0]
+    stock["instId"] = re.findall(r"InstrumentID='([\w\d]*)|$',", r.text)[0]
     stock["insCode"] = (
         stock_id if re.findall(r"InsCode='(\d*)',", r.text)[0] == stock_id else 0
     )
     stock["baseVol"] = float(re.findall(r"BaseVol=([\.\d]*),", r.text)[0])
     try:
         stock["name"] = re.findall(r"LVal18AFC='([\D]*)',", r.text)[0]
+    except:
+        return
+    try:
+        stock["group_name"] = re.findall(r"LSecVal='([\D]*)',", r.text)[0]
     except:
         return
     try:
@@ -73,10 +74,19 @@ def get_stock_detail(stock_id: str, group_id: int) -> "stock":
         )
     except:
         stock["estimatedEps"] = None
-    stock["group_code"] = group_id
+    stock["group_code"] = re.findall(r"CSecVal='([\w\d]*)|$',", r.text)[0]
     if stock["name"] == "',DEven='',LSecVal='',CgrValCot='',Flow='',InstrumentID='":
         return False
-    db.session.add(Stocks(**stock))
+    
+    exist = Stocks.query.filter_by(code=stock_id).first()
+    if exist:
+        exist.shareCount=stock["shareCount"]
+        exist.baseVol= stock["baseVol"]
+        exist.sectorPe=stock["sectorPe"]
+        exist.estimatedEps=stock["estimatedEps"]
+    else:
+        db.session.add(Stocks(**stock))
+        
     try:
         db.session.commit()
     except:
@@ -95,14 +105,13 @@ def fill_stock_table():
     5- guides you to use the package
     """
     print("Downloading group ids...")
-    groups = sorted(get_stock_groups())
-    for i, group in enumerate(groups):
-        stocks = get_stock_ids(group)
-        _ = [get_stock_detail(s, int(group)) for s in stocks]
+    stocks = get_stock_ids()
+    for i,stock in enumerate(stocks):
+        get_stock_detail(stock)
         print(
-            f"downloading group: {group}, changes: {(i+1)/len(groups)*100:.1f}% completed",
+            f"downloading stocks details, changes: {(i+1)/len(stocks)*100:.1f}% completed",
             end="\r",
-        )
+            )
 
     print("Add all groups, you can download stock price by following codes")
     print("from tehran_stocks import downloader")

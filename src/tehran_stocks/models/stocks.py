@@ -22,8 +22,8 @@ class Stocks(Base):
     _cached = False
     _dfcounter = 0
 
-    def __init__ (self, name):
-        pass       
+    def __init__ (self, **kwargs):
+        super().__init__(**kwargs)
     
     @property
     def df(self):
@@ -90,6 +90,7 @@ class StockPrice(Base):
     code = Column(String, ForeignKey("stocks.code"),index=True)
     ticker = Column(String)
     date = Column("dtyyyymmdd", Integer,index=True)
+    date_shamsi = Column(String)
     first = Column(Float)
     high = Column(Float)
     low = Column(Float)

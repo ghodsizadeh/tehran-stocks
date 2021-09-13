@@ -9,7 +9,7 @@ from tehran_stocks import db
 args = sys.argv
 if len(args) == 1:
     print("you have to pass an option:")
-    print(" init\n update \n group grouo_code(int) \n get_groups")
+    print(" init\n update \n upgrade \n group grouo_code(int) \n get_groups")
     sys.exit()
 if args[1] == "init":
     if not os.path.isfile(db.db_path):
@@ -19,8 +19,19 @@ if args[1] == "init":
     else:
         print("Your database was initialized before ")
 
+    """
+    #ts-get update(Suggested names:"ts-get update_price"):
+    - update price only for available stocks in database
+    """
 elif args[1] == "update":
     ts.get_all_price()
+    """
+    #ts-get upgrade(Suggested:"ts-get update_stocks"):
+    1-Re-download groups and symbols for symbols that have been recently added in tsetmc
+    2-Solving the update price problem (see: issues #31)
+    """
+elif args[1] == "upgrade":
+    ts.fill_db()
 elif args[1] == "group":
     try:
         code = int(args[2])
