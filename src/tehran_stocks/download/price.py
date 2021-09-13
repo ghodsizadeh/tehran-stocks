@@ -5,6 +5,7 @@ from datetime import datetime
 
 import pandas as pd
 import requests
+import io
 
 import tehran_stocks.config as db
 from tehran_stocks.models import StockPrice, Stocks
@@ -55,7 +56,9 @@ def update_stock_price(code: str):
         except Exception as e:
             print('Error on formating price:'+ str(e))
         
-        df = pd.read_csv(url)
+        s = requests.get(url).content
+        df = pd.read_csv(io.StringIO(s.decode('utf-8')))
+        #df = pd.read_csv(url)
         df.columns = [i[1:-1].lower() for i in df.columns]
         df["code"] = code
         df["date_shamsi"] = ""
