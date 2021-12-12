@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "tehran-stocks"
+version = "1.0.0"
+description = "Data Downloader for Tehran stock market"
+authors = ["Mehdi Ghodsizadeh <mehdi.ghodsizadeh@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://ghodsizadeh.github.io/tehran-stocks/"
+repository = "https://github.com/ghodsizadeh/tehran-stocks.git"
+
+[tool.poetry.dependencies]
+python = "^3.6"
+requests = "^2.26.0"
+SQLAlchemy = "^1.4.28"
+jalali-pandas = "^0.2.0"
+
+[tool.poetry.dev-dependencies]
+pre-commit = "^2.16.0"
+pylint = "^2.12.2"
+pytest = "0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
