@@ -53,8 +53,7 @@ class Stocks(Base):
         from tehran_stocks.download import update_stock_price
 
         try:
-            res = update_stock_price(self.code)
-            return res
+            return update_stock_price(self.code)
         except:
             return False
 
@@ -75,12 +74,11 @@ class Stocks(Base):
 
     @staticmethod
     def get_group():
-        codes = (
+        return (
             session.query(Stocks.group_code, Stocks.group_name)
             .group_by(Stocks.group_code)
             .all()
         )
-        return codes
 
 
 class StockPrice(Base):
@@ -115,6 +113,5 @@ def get_asset(name):
         cname = list(name)
         cname[name.find('ک')] = 'ك'
         name = ''.join(cname)
-    asset = Stocks.query.filter_by(name=name).first()
-    return asset
+    return Stocks.query.filter_by(name=name).first()
 
