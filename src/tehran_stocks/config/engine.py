@@ -6,8 +6,8 @@ from pathlib import Path
 import os
 import sqlite3
 home = str(Path.home())
-db_path = os.path.join(home + "/tse/" + "stocks.db")
-engine_path = "sqlite:///" + db_path
+db_path = os.path.join(f'{home}/tse/stocks.db')
+engine_path = f"sqlite:///{db_path}"
 creator = lambda: sqlite3.connect('file::memory:?cache=shared', uri=True) # Add caching into sqlalchemy
 #engine = create_engine(engine_path,creator=creator)
 engine = create_engine(engine_path)

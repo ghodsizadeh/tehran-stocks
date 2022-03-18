@@ -8,7 +8,7 @@ def init_db():
     print("creating database")
     path = os.path.join(db.home, "tse")
 
-    if not "tse" in os.listdir(db.home):
+    if "tse" not in os.listdir(db.home):
         print("making database folder ...")
         os.mkdir(path)
     models.create()
