@@ -13,10 +13,9 @@ from tehran_stocks.models import StockPrice, Stocks
 
 def convert_to_shamsi(date):
     date = str(date)
-    date_shamsi = jdate.fromgregorian(
+    return jdate.fromgregorian(
         day=int(date[-2:]), month=int(date[4:6]), year=int(date[:4])
     ).strftime("%Y/%m/%d")
-    return date_shamsi
 
 
 def update_stock_price(code: str):
@@ -40,7 +39,7 @@ def update_stock_price(code: str):
     try:
         q = f"select dtyyyymmdd as date from stock_price where code = {code}"
         temp = pd.read_sql(q, db.engine)
-        
+
         now = datetime.now().strftime("%Y%m%d")
 
         qMaxDate=f"select max(dtyyyymmdd) as date from stock_price where code = {code}"
@@ -54,8 +53,8 @@ def update_stock_price(code: str):
             else:                #The price data for this code is updateed
                 return
         except Exception as e:
-            print('Error on formating price:'+ str(e))
-        
+            print(f'Error on formating price:{str(e)}')
+
         s = requests.get(url).content
         df = pd.read_csv(io.StringIO(s.decode('utf-8')))
         #df = pd.read_csv(url)

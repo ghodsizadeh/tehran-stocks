@@ -18,8 +18,7 @@ def get_stock_groups():
     its a helper for other parts of package to collect stock lists.
     """
     r = requests.get("http://www.tsetmc.com/Loader.aspx?ParTree=111C1213")
-    groups = re.findall(r"\d{2}", r.text)
-    return groups
+    return re.findall(r"\d{2}", r.text)
 
 
 def get_stock_detail(stock_id: str) -> "stock":
@@ -39,10 +38,13 @@ def get_stock_detail(stock_id: str) -> "stock":
 
     """
     
-    url = "http://www.tsetmc.com/Loader.aspx?ParTree=151311&i={}".format(stock_id)
+    url = f"http://www.tsetmc.com/Loader.aspx?ParTree=151311&i={stock_id}"
     r = requests.get(url)
-    stock = {"code": stock_id}
-    stock["instId"] = re.findall(r"InstrumentID='([\w\d]*)|$',", r.text)[0]
+    stock = {
+        "code": stock_id,
+        "instId": re.findall(r"InstrumentID='([\w\d]*)|$',", r.text)[0],
+    }
+
     stock["insCode"] = (
         stock_id if re.findall(r"InsCode='(\d*)',", r.text)[0] == stock_id else 0
     )
@@ -77,16 +79,15 @@ def get_stock_detail(stock_id: str) -> "stock":
     stock["group_code"] = re.findall(r"CSecVal='([\w\d]*)|$',", r.text)[0]
     if stock["name"] == "',DEven='',LSecVal='',CgrValCot='',Flow='',InstrumentID='":
         return False
-    
-    exist = Stocks.query.filter_by(code=stock_id).first()
-    if exist:
+
+    if exist := Stocks.query.filter_by(code=stock_id).first():
         exist.shareCount=stock["shareCount"]
         exist.baseVol= stock["baseVol"]
         exist.sectorPe=stock["sectorPe"]
         exist.estimatedEps=stock["estimatedEps"]
     else:
         db.session.add(Stocks(**stock))
-        
+
     try:
         db.session.commit()
     except:
