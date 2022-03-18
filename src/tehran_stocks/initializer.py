@@ -6,11 +6,14 @@ from tehran_stocks.download import fill_stock_table
 
 def init_db():
     print("creating database")
-    path = os.path.join(db.home, "tse")
+    path = os.path.join(db.home, ".tse")
 
     if not "tse" in os.listdir(db.home):
         print("making database folder ...")
-        os.mkdir(path)
+        try:
+            os.mkdir(path)
+        except FileExistsError:
+            print("folder already exists")
     models.create()
     print(f"DataBase created in: {path}")
 
@@ -33,4 +36,3 @@ def fill_db():
         print("or use tehran_stocks.update_group(id) ")
         print("For more info go to:")
         print("https://github.com/ghodsizadeh/tehran-stocks")
-

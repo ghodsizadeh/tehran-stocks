@@ -7,17 +7,23 @@ license = "MIT"
 readme = "README.md"
 homepage = "https://ghodsizadeh.github.io/tehran-stocks/"
 repository = "https://github.com/ghodsizadeh/tehran-stocks.git"
+packages = [
+    { include = "tehran_stocks", from = 'src' }
+]
+
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.8"
 requests = "^2.26.0"
 SQLAlchemy = "^1.4.28"
 jalali-pandas = "^0.2.0"
+pandas = "^1.4.1"
 
 [tool.poetry.dev-dependencies]
 pre-commit = "^2.16.0"
 pylint = "^2.12.2"
-pytest = "0"
+pytest = "^6.2.5"
+ipython = "^8.0.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
