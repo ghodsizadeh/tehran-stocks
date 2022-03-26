@@ -18,6 +18,37 @@ def convert_to_shamsi(date):
     ).strftime("%Y/%m/%d")
 
 
+def get_stock_price_history(stock_id: int) -> pd.DataFrame:
+    """Get stock price history from the web.
+
+    params:
+    ----------------
+    stock_id: int
+        http://www.tsetmc.com/Loader.aspx?ParTree=151311&i=**35700344742885862#**
+        number after i=
+
+    return:
+    ----------------
+    pd.DataFrame
+        date: str
+        open: float
+        high: float
+        low: float
+        close: float
+        volume: int
+
+    example
+    ----------------
+    df = get_stock_price_history(35700344742885862)
+    """
+    now = datetime.now().strftime("%Y%m%d")
+    url = f"http://www.tsetmc.com/tse/data/Export-txt.aspx?a=InsTrade&InsCode={stock_id}&DateFrom=20000101&DateTo={now}&b=0"
+    s = requests.get(url).content
+    df = pd.read_csv(io.StringIO(s.decode("utf-8")))
+    df.columns = [i[1:-1].lower() for i in df.columns]
+    return df
+
+
 def update_stock_price(code: str):
     """
     Update (or download for the first time) Stock prices
@@ -60,8 +91,6 @@ def update_stock_price(code: str):
         df = pd.read_csv(io.StringIO(s.decode("utf-8")))
         df.columns = [i[1:-1].lower() for i in df.columns]
         df["code"] = code
-        df["date_shamsi"] = ""
-
         df["date_shamsi"] = df["dtyyyymmdd"].apply(convert_to_shamsi)
         try:
             q = f"select dtyyyymmdd as date from stock_price where code = '{code}'"
