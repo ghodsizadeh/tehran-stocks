@@ -13,7 +13,16 @@ from tehran_stocks.models import StockPrice, Stocks, get_asset
 
 from .initializer import init_db, fill_db
 
-if not os.path.isfile(db.db_path):
+
+def db_is_empty():
+    try:
+        db.session.execute("select * from stocks limit 1;")
+        return False
+    except:
+        return True
+
+
+if db_is_empty():
     print("No database founded.")
     init_db()
     fill_db()
