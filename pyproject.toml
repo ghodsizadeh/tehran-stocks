@@ -18,12 +18,14 @@ requests = "^2.26.0"
 SQLAlchemy = "^1.4.28"
 jalali-pandas = "^0.2.0"
 pandas = "^1.4.1"
+lxml = "^4.8.0"
 
 [tool.poetry.dev-dependencies]
 pre-commit = "^2.16.0"
 pylint = "^2.12.2"
 pytest = "^6.2.5"
 ipython = "^8.0.1"
+ipdb = "^0.13.9"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

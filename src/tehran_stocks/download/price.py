@@ -37,46 +37,43 @@ def update_stock_price(code: str):
     stock.update() #Done
     """
     try:
-        q = f"select dtyyyymmdd as date from stock_price where code = {code}"
-        temp = pd.read_sql(q, db.engine)
-
         now = datetime.now().strftime("%Y%m%d")
-
-        qMaxDate=f"select max(dtyyyymmdd) as date from stock_price where code = {code}"
-        maxdate = pd.read_sql(qMaxDate, db.engine)
-        lastDate=(maxdate.date.iat[0])
         try:
-            if lastDate is None:#no any record added in database
+            max_date_query = (
+                f"select max(dtyyyymmdd) as date from stock_price where code = '{code}'"
+            )
+            max_date = pd.read_sql(max_date_query, db.engine)
+            last_date = max_date.date.iat[0]
+        except Exception as e:
+            last_date = None
+        try:
+            if last_date is None:  # no any record added in database
                 url = f"http://www.tsetmc.com/tse/data/Export-txt.aspx?a=InsTrade&InsCode={code}&DateFrom=20000101&DateTo={now}&b=0"
-            elif (str(lastDate)<now):   #need to updata new price data
-                url = f"http://www.tsetmc.com/tse/data/Export-txt.aspx?a=InsTrade&InsCode={code}&DateFrom={str(lastDate)}&DateTo={now}&b=0"
-            else:                #The price data for this code is updateed
+            elif str(last_date) < now:  # need to updata new price data
+                url = f"http://www.tsetmc.com/tse/data/Export-txt.aspx?a=InsTrade&InsCode={code}&DateFrom={str(last_date)}&DateTo={now}&b=0"
+            else:  # The price data for this code is updateed
                 return
         except Exception as e:
-            print(f'Error on formating price:{str(e)}')
+            print(f"Error on formating price:{str(e)}")
 
         s = requests.get(url).content
-        df = pd.read_csv(io.StringIO(s.decode('utf-8')))
-        #df = pd.read_csv(url)
+        df = pd.read_csv(io.StringIO(s.decode("utf-8")))
         df.columns = [i[1:-1].lower() for i in df.columns]
         df["code"] = code
         df["date_shamsi"] = ""
 
-
-        # for index, row in df.iterrows():
-        #     str_date = str(df.at[index, "dtyyyymmdd"])
-        #     date_shamsi = date.fromgregorian(
-        #         day=int(str_date[-2:]),
-        #         month=int(str_date[4:6]),
-        #         year=int(str_date[:4])
-        #         ).strftime("%Y/%m/%d")
-        #     df.at[index, "date_shamsi"] = date_shamsi
         df["date_shamsi"] = df["dtyyyymmdd"].apply(convert_to_shamsi)
-
-        df = df[~df.dtyyyymmdd.isin(temp.date)]
+        try:
+            q = f"select dtyyyymmdd as date from stock_price where code = '{code}'"
+            temp = pd.read_sql(q, db.engine)
+            df = df[~df.dtyyyymmdd.isin(temp.date)]
+        except:
+            pass
         df.to_sql("stock_price", db.engine, if_exists="append", index=False)
         return True, code
+
     except Exception as e:
+        print("here")
         return e, code
 
 

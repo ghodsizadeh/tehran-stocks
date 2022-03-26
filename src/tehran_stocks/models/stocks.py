@@ -2,6 +2,7 @@ from tehran_stocks.config import *
 from sqlalchemy.orm import relationship
 import pandas as pd
 import requests
+import jalali_pandas
 
 
 class Stocks(Base):
@@ -31,7 +32,7 @@ class Stocks(Base):
         self._dfcounter += 1
         if self._cached:
             return self._df
-        query = f"select * from stock_price where code = {self.code}"
+        query = f"select * from stock_price where code = '{self.code}'"
         df = pd.read_sql(query, engine)
         if df.empty:
             self._cached = True
@@ -45,6 +46,26 @@ class Stocks(Base):
         self._df = df
 
         return self._df
+
+    def get_dividend(self):
+        url = f"http://www.tsetmc.com/Loader.aspx?Partree=15131G&i={self.code}"
+        r = requests.get(url)
+        changes = pd.read_html(r.text)[0]
+        changes.columns = ["date", "after", "before"]
+        changes["dividend"] = changes.before - changes.after
+        changes["date"] = changes.date.jalali.parse_jalali("%Y/%m/%d")
+        changes["gdate"] = changes.date.jalali.to_gregorian()
+        return changes
+
+    def get_shares_history(self):
+        # http://www.tsetmc.com/Loader.aspx?Partree=15131H&i=35700344742885862
+        url = f"http://www.tsetmc.com/Loader.aspx?Partree=15131H&i={self.code}"
+        r = requests.get(url)
+        df = pd.read_html(r.text)[0]
+        df.columns = ["date", "new_shares", "old_shares"]
+        df["date"] = df.date.jalali.parse_jalali("%Y/%m/%d")
+        df["gdate"] = df.date.jalali.to_gregorian()
+        return df
 
     @property
     def mpl(self):
@@ -150,8 +171,8 @@ class StockPrice(Base):
     high = Column(Float)
     low = Column(Float)
     close = Column(Float)
-    value = Column(Integer)
-    vol = Column(Integer)
+    value = Column(BIGINT)
+    vol = Column(BIGINT)
     openint = Column(Integer)
     per = Column(String)
     open = Column(Float)
