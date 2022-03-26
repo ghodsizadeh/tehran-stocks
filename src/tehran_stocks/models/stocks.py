@@ -162,13 +162,5 @@ class StockPrice(Base):
 
 
 def get_asset(name):
-
-    if name.find("ی") >= 0:
-        cname = list(name)
-        cname[name.find("ی")] = "ي"
-        name = "".join(cname)
-    if name.find("ک") >= 0:
-        cname = list(name)
-        cname[name.find("ک")] = "ك"
-        name = "".join(cname)
+    name = name.replace("ی", "ي").replace("ک", "ك")
     return Stocks.query.filter_by(name=name).first()
