@@ -28,7 +28,8 @@ class Stocks(Base):
         super().__init__(**kwargs)
 
     @property
-    def df(self):
+    def df(self) -> pd.DataFrame:
+        """dataframe of stock price with date and OHLC"""
         self._dfcounter += 1
         if self._cached:
             return self._df
@@ -47,7 +48,14 @@ class Stocks(Base):
 
         return self._df
 
-    def get_dividend(self):
+    def get_dividend(self) -> pd.DataFrame:
+        """get changes in price for dividend and changes in share
+        postive value is dividend and negative value is changes in share
+
+        Returns:
+            pd.DataFrame: _description_
+        """
+
         url = f"http://www.tsetmc.com/Loader.aspx?Partree=15131G&i={self.code}"
         r = requests.get(url)
         changes = pd.read_html(r.text)[0]
@@ -57,8 +65,12 @@ class Stocks(Base):
         changes["gdate"] = changes.date.jalali.to_gregorian()
         return changes
 
-    def get_shares_history(self):
-        # http://www.tsetmc.com/Loader.aspx?Partree=15131H&i=35700344742885862
+    def get_shares_history(self) -> pd.DataFrame:
+        """_summary_get changes in shares
+
+        Returns:
+            pd.DataFrame: return day of shares changes and shares count [date, new_shares, old_shares, gdate]
+        """
         url = f"http://www.tsetmc.com/Loader.aspx?Partree=15131H&i={self.code}"
         r = requests.get(url)
         df = pd.read_html(r.text)[0]
@@ -89,6 +101,7 @@ class Stocks(Base):
             return False
 
     def summary(self):
+        """summart of stock"""
         df = self.df
         sdate = df.date.min().strftime("%Y%m%d")
         edate = df.date.max().strftime("%Y%m%d")
@@ -97,7 +110,14 @@ class Stocks(Base):
         print(f"End date: {edate}")
         print(f"Total days: {len(df)}")
 
-    def get_instant_detail(self):
+    def get_instant_detail(self) -> dict:
+        """get instant detail of stock
+        last_price, last_close, last_open, last_high, last_low, last_vol, trade_count, trade_value,market_cap
+        instantly from the website
+
+        Returns:
+            dict: { last_price, last_close, last_open, last_high, last_low, last_vol, trade_count, trade_value,market_cap}
+        """
         url = (
             f"http://www.tsetmc.com/tsev2/data/instinfodata.aspx?i={self.code}&c=27%20"
         )
