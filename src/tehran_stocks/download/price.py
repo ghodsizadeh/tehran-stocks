@@ -2,7 +2,8 @@ import re
 import time
 from jdatetime import date as jdate
 from datetime import datetime
-
+import asyncio
+import aiohttp
 import pandas as pd
 import requests
 import io
@@ -49,7 +50,7 @@ def get_stock_price_history(stock_id: int) -> pd.DataFrame:
     return df
 
 
-def update_stock_price(code: str):
+async def update_stock_price(code: str):
     """
     Update (or download for the first time) Stock prices
 
@@ -87,8 +88,10 @@ def update_stock_price(code: str):
         except Exception as e:
             print(f"Error on formating price:{str(e)}")
 
-        s = requests.get(url).content
-        df = pd.read_csv(io.StringIO(s.decode("utf-8")))
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as resp:
+                data = await resp.text()
+        df = pd.read_csv(io.StringIO(data))
         df.columns = [i[1:-1].lower() for i in df.columns]
         df["code"] = code
         df["date_shamsi"] = df["dtyyyymmdd"].apply(convert_to_shamsi)
@@ -102,7 +105,6 @@ def update_stock_price(code: str):
         return True, code
 
     except Exception as e:
-        print("here")
         return e, code
 
 
@@ -113,12 +115,12 @@ def update_group(code):
     `Warning: Stock table should be updated`
     """
     stocks = db.session.query(Stocks.code).filter_by(group_code=code).all()
-    if not stocks:
-        print("Make sure group has some entity on Stocks")
-        return
-    for i, stock in enumerate(stocks):
-        update_stock_price(stock[0])
-        print(f"group progress: {100*(i+1)/len(stocks):.1f}%", end="\r")
+    print("updating group", code)
+    loop = asyncio.get_event_loop()
+    tasks = [update_stock_price(stock[0]) for stock in stocks]
+    results = loop.run_until_complete(asyncio.gather(*tasks))
+    print("group", code, "updated")
+    return results
 
 
 def get_all_price():
