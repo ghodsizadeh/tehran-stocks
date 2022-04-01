@@ -1,3 +1,4 @@
+from asyncio import tasks
 import requests
 import re
 import time
@@ -21,7 +22,19 @@ def get_stock_groups():
     return re.findall(r"\d{2}", r.text)
 
 
-def get_stock_detail(stock_id: str) -> "stock":
+def create_or_update_stock_from_dict(stock_id, stock):
+    if exist := Stocks.query.filter_by(code=stock_id).first():
+        print(f"stock with code {stock_id} exist")
+        exist.shareCount = stock["shareCount"]
+        exist.baseVol = stock["baseVol"]
+        exist.sectorPe = stock["sectorPe"]
+        exist.estimatedEps = stock["estimatedEps"]
+    else:
+        print(f"creating stock with code {stock_id}")
+        db.session.add(Stocks(**stock))
+
+
+def get_stock_detail(stock_id: str) -> Stocks:
     """
     Dowload stocks detail and save them to the database.
     better not use it alone.
@@ -31,13 +44,13 @@ def get_stock_detail(stock_id: str) -> "stock":
     params
     ----------------
     stockk_id :
-        an str of an interger or an integer if not started by 0 whicj represent  the Id 
+        an str of an interger or an integer if not started by 0 whicj represent  the Id
         in tsetmc website i.e. arg i={stock_id} inside  the url
     group_id:
         int: number that represent group of stock
 
     """
-    
+
     url = f"http://www.tsetmc.com/Loader.aspx?ParTree=151311&i={stock_id}"
     r = requests.get(url)
     stock = {
@@ -80,13 +93,7 @@ def get_stock_detail(stock_id: str) -> "stock":
     if stock["name"] == "',DEven='',LSecVal='',CgrValCot='',Flow='',InstrumentID='":
         return False
 
-    if exist := Stocks.query.filter_by(code=stock_id).first():
-        exist.shareCount=stock["shareCount"]
-        exist.baseVol= stock["baseVol"]
-        exist.sectorPe=stock["sectorPe"]
-        exist.estimatedEps=stock["estimatedEps"]
-    else:
-        db.session.add(Stocks(**stock))
+    create_or_update_stock_from_dict(stock_id, stock)
 
     try:
         db.session.commit()
@@ -105,18 +112,38 @@ def fill_stock_table():
     4- save them to database
     5- guides you to use the package
     """
+    URL = "https://ts-api.ir/api/stocks"
+    try:
+        print("try Downloading stock table from the package api... ")
+        print("visit: https://ts-api.ir/")
+        r = requests.get(URL)
+        if r.status_code != 200:
+            raise ConnectionError("connection error")
+        data = r.json()
+        stocks = data["stocks"]
+        for stock in stocks:
+            del stock["id"]
+            create_or_update_stock_from_dict(stock["code"], stock)
+        db.session.commit()
+        return
+
+    except ConnectionError:
+        print("fall back to manual mode")
+        pass
+    except Exception as e:
+        print(e)
+        pass
     print("Downloading group ids...")
     stocks = get_stock_ids()
-    for i,stock in enumerate(stocks):
+    for i, stock in enumerate(stocks):
         get_stock_detail(stock)
         print(
             f"downloading stocks details, changes: {(i+1)/len(stocks)*100:.1f}% completed",
             end="\r",
-            )
+        )
 
     print("Add all groups, you can download stock price by following codes")
     print("from tehran_stocks import downloader")
     print(" downloader.download_all() # for downloading all data")
     print("downloader.download_group(group_id) # to download specefic group data")
     print("downloader.download_stock(stock) to downloand stock specefic")
-
