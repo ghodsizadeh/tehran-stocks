@@ -118,7 +118,23 @@ def update_group(code):
     print("updating group", code)
     loop = asyncio.get_event_loop()
     tasks = [update_stock_price(stock[0]) for stock in stocks]
-    results = loop.run_until_complete(asyncio.gather(*tasks))
+    try:
+        results = loop.run_until_complete(asyncio.gather(*tasks))
+    except RuntimeError:
+        WARNING_COLOR = "\033[93m"
+        ENDING_COLOR = "\033[0m"
+        print(WARNING_COLOR, "Please update stock table", ENDING_COLOR)
+        print(
+            f"{WARNING_COLOR}If you are using jupyter notebook, please run following command:{ENDING_COLOR}"
+        )
+        print("```")
+        print("%pip install nest_asyncio")
+        print("import nest_asyncio; nest_asyncio.apply()")
+        print("from tehran_stocks.download import get_all_price")
+        print("get_all_price()")
+        print("```")
+        raise RuntimeError
+
     print("group", code, "updated")
     return results
 

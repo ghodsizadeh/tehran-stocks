@@ -103,8 +103,8 @@ class Stocks(Base):
     def summary(self):
         """summart of stock"""
         df = self.df
-        sdate = df.date.min().strftime("%Y%m%d")
-        edate = df.date.max().strftime("%Y%m%d")
+        sdate = df.index.min().strftime("%Y/%m/%d")
+        edate = df.index.max().strftime("%Y/%m/%d")
 
         print(f"Start date: {sdate}")
         print(f"End date: {edate}")
@@ -139,9 +139,9 @@ class Stocks(Base):
         self.last_high = main_response[4]
         self.last_low = main_response[5]
         self.last_open = main_response[6]
-        self.trad_count = main_response[7]
-        self.trad_volume = main_response[8]
-        self.trad_value = main_response[9]
+        self.trade_count = main_response[7]
+        self.trade_volume = main_response[8]
+        self.trade_value = main_response[9]
         self.market_cap = main_response[10]
         self.date_string = main_response[12]
         self.time_string = main_response[13]
@@ -155,9 +155,9 @@ class Stocks(Base):
             "last_high",
             "last_low",
             "last_open",
-            "trad_count",
-            "trad_volume",
-            "trad_value",
+            "trade_count",
+            "trade_volume",
+            "trade_value",
             "market_cap",
             "date_string",
             "time_string",
