@@ -11,7 +11,7 @@ import yaml
 
 HOME_PATH = str(Path.home())
 TSE_FOLDER = ".tse"
-CONFIG_PATH = os.path.join(HOME_PATH, TSE_FOLDER) + "/" + "config.yml"
+CONFIG_PATH = f'{os.path.join(HOME_PATH, TSE_FOLDER)}/config.yml'
 
 if not os.path.exists(CONFIG_PATH):
     # create config.yml from config.deafult.yml
@@ -67,8 +67,8 @@ class ClassProperty(object):
 
 class QueryMixin:
     @ClassProperty
-    def query(cls):
-        return session.query(cls)
+    def query(self):
+        return session.query(self)
 
     def display(self):
         data = self.__dict__
