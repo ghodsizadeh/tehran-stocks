@@ -129,10 +129,8 @@ def fill_stock_table():
 
     except ConnectionError:
         print("fall back to manual mode")
-        pass
     except Exception as e:
         print(e)
-        pass
     print("Downloading group ids...")
     stocks = get_stock_ids()
     for i, stock in enumerate(stocks):
