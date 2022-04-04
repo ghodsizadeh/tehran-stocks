@@ -5,12 +5,48 @@ from sqlalchemy import *
 from pathlib import Path
 import os
 import sqlite3
-home = str(Path.home())
-db_path = os.path.join(home + "/tse/" + "stocks.db")
-engine_path = "sqlite:///" + db_path
-creator = lambda: sqlite3.connect('file::memory:?cache=shared', uri=True) # Add caching into sqlalchemy
-#engine = create_engine(engine_path,creator=creator)
-engine = create_engine(engine_path)
+import logging
+import yaml
+
+
+HOME_PATH = str(Path.home())
+TSE_FOLDER = ".tse"
+CONFIG_PATH = os.path.join(HOME_PATH, TSE_FOLDER) + "/" + "config.yml"
+
+if not os.path.exists(CONFIG_PATH):
+    # create config.yml from config.deafult.yml
+    with open(os.path.join(os.path.dirname(__file__), "config.default.yml"), "r") as f:
+        config = yaml.full_load(f)
+
+    with open(CONFIG_PATH, "w") as f:
+        yaml.dump(config, f)
+
+
+with open(CONFIG_PATH, "r") as f:
+    config = yaml.full_load(f)
+
+defualt_db_path = os.path.join(f"{HOME_PATH}/{TSE_FOLDER}/stocks.db")
+
+db_path = config.get("database").get("path")
+if db_path is None:
+    db_path = defualt_db_path
+
+default_engine_URI = f"sqlite:///{db_path}"
+engine = config.get("database").get("engine")
+if engine == "sqlite":
+    engine_URI = default_engine_URI
+else:
+    engine = config.get("database").get("engine")
+    host = config.get("database").get("host")
+    port = config.get("database").get("port")
+    database = config.get("database").get("database")
+    user = config.get("database").get("user")
+    password = config.get("database").get("password")
+    engine_URI = f"{engine}://{user}:{password}@{host}:{port}/{database}"
+
+
+logging.info(engine_URI)
+engine = create_engine(engine_URI)
 
 
 Session = sessionmaker()
