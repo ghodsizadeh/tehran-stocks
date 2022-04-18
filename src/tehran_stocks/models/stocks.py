@@ -40,6 +40,7 @@ class Stocks(Base):
             self._df = df
             return self._df
         df["date"] = pd.to_datetime(df["dtyyyymmdd"], format="%Y%m%d")
+        df["jdate"] = df.date.jalali.to_jalali()
         df = df.sort_values("date")
         df.reset_index(drop=True, inplace=True)
         df.set_index("date", inplace=True)
