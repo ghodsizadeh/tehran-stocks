@@ -6,6 +6,7 @@
 [![PyPI version](https://badge.fury.io/py/tehran-stocks.svg)](https://badge.fury.io/py/tehran-stocks)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/tehran-stocks.svg)
+[![HitCount](https://hits.dwyl.com/ghodsizadeh/tehran-stocks.svg?style=flat-square)](http://hits.dwyl.com/ghodsizadeh/tehran-stocks)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ghodsizadeh/tehran-stocks/blob/master/Example/Read_Data.ipynb)
 
 A python package that helps to access TSETMC stock price history, Using OOP Interface
@@ -29,21 +30,21 @@ A python package that helps to access TSETMC stock price history, Using OOP Inte
 <!-- TOC orderedlist:true -->
 
 - [1. Tehran Stock Market بورس تهران در پایتون](#1-tehran-stock-market-%D8%A8%D9%88%D8%B1%D8%B3-%D8%AA%D9%87%D8%B1%D8%A7%D9%86-%D8%AF%D8%B1-%D9%BE%D8%A7%DB%8C%D8%AA%D9%88%D9%86)
-  - [1.1. Features](#11-features)
-  - [1.2. Table of Contents](#12-table-of-contents)
+    - [1.1. Features](#11-features)
+    - [1.2. Table of Contents](#12-table-of-contents)
 - [2. Usage](#2-usage)
-  - [2.1. - Install](#21---install)
-  - [2.2. - Initialization](#22---initialization)
-    - [2.2.1. -1 Command line](#221--1-command-line)
-    - [2.2.2. -2 Python](#222--2-python)
-  - [2.3. - Download and Update prices](#23---download-and-update-prices)
-    - [2.3.1. -1 Command line](#231--1-command-line)
-    - [2.3.2. -2 Python](#232--2-python)
-  - [2.4. - Access Data](#24---access-data)
-    - [2.4.1. -1 Search Stocks](#241--1-search-stocks)
-    - [2.4.2. -2 Get Instant price and more details:](#242--2-get-instant-price-and-more-details)
-  - [2.5. - Custom Database](#25---custom-database)
-  - [2.6. Todo](#26-todo)
+    - [2.1. - Install](#21---install)
+    - [2.2. - Initialization](#22---initialization)
+        - [2.2.1. -1 Command line](#221--1-command-line)
+        - [2.2.2. -2 Python](#222--2-python)
+    - [2.3. - Download and Update prices](#23---download-and-update-prices)
+        - [2.3.1. -1 Command line](#231--1-command-line)
+        - [2.3.2. -2 Python](#232--2-python)
+    - [2.4. - Access Data](#24---access-data)
+        - [2.4.1. -1 Search Stocks](#241--1-search-stocks)
+        - [2.4.2. -2 Get Instant price and more details:](#242--2-get-instant-price-and-more-details)
+    - [2.5. - Custom Database](#25---custom-database)
+    - [2.6. Todo](#26-todo)
 - [3. Support❤️](#3-support)
 
 <!-- /TOC -->
