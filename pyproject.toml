@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "tehran-stocks"
-version = "1.0.4"
+version = "1.0.9"
 description = "Data Downloader for Tehran stock market"
 authors = ["Mehdi Ghodsizadeh <mehdi.ghodsizadeh@gmail.com>"]
 license = "MIT"

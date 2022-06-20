@@ -1,3 +1,4 @@
+import contextlib
 from sqlalchemy import Column, Float, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import sessionmaker
@@ -11,15 +12,23 @@ import yaml
 
 HOME_PATH = str(Path.home())
 TSE_FOLDER = ".tse"
-CONFIG_PATH = os.path.join(HOME_PATH, TSE_FOLDER) + "/" + "config.yml"
+CONFIG_PATH = f"{os.path.join(HOME_PATH, TSE_FOLDER)}/config.yml"
 
-if not os.path.exists(CONFIG_PATH):
+def create_config():
     # create config.yml from config.deafult.yml
-    with open(os.path.join(os.path.dirname(__file__), "config.default.yml"), "r") as f:
-        config = yaml.full_load(f)
+    if not os.path.exists(CONFIG_PATH):
+        with open(os.path.join(os.path.dirname(__file__), "config.default.yml"), "r") as f:
+            config = yaml.full_load(f)
+        with  contextlib.suppress(FileExistsError):
+                path = os.path.join(HOME_PATH, TSE_FOLDER)
+                os.mkdir(path)
+        with open(CONFIG_PATH, "w") as f:   
 
-    with open(CONFIG_PATH, "w") as f:
-        yaml.dump(config, f)
+
+            yaml.dump(config, f)
+
+create_config()    
+
 
 
 with open(CONFIG_PATH, "r") as f:
