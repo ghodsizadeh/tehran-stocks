@@ -121,6 +121,7 @@ def fill_stock_table():
             raise ConnectionError("connection error")
         data = r.json()
         stocks = data["stocks"]
+        db.session.rollback()
         for stock in stocks:
             del stock["id"]
             create_or_update_stock_from_dict(stock["code"], stock)

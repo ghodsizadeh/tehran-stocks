@@ -8,14 +8,14 @@ def init_db():
     print("creating database")
     path = os.path.join(db.HOME_PATH, db.TSE_FOLDER)
 
-    if "tse" not in os.listdir(db.HOME_PATH):
-        print("making package folder...")
-        print("Includes: config.yml and stocks.db  if you are using sqlite.")
-        print("you can change config.yml to your needs.")
-        try:
+
+    try:
             os.mkdir(path)
-        except FileExistsError:
-            print("folder already exists")
+            print("making package folder...")
+            print("Includes: config.yml and stocks.db  if you are using sqlite.")
+            print("you can change config.yml to your needs.")
+    except FileExistsError:
+        print("folder already exists")
     models.create()
     print(f"DataBase created in: {path}")
 
