@@ -76,8 +76,8 @@ class ClassProperty(object):
 
 class QueryMixin:
     @ClassProperty
-    def query(cls):
-        return session.query(cls)
+    def query(self):
+        return session.query(self)
 
     def display(self):
         data = self.__dict__
