@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 import pandas as pd
 import requests
 import jalali_pandas
+from tehran_stocks.download.base import BASE_URL
 
 
 class Stocks(Base):
@@ -57,7 +58,7 @@ class Stocks(Base):
             pd.DataFrame: _description_
         """
 
-        url = f"http://www.tsetmc.com/Loader.aspx?Partree=15131G&i={self.code}"
+        url = f"{BASE_URL}/Loader.aspx?Partree=15131G&i={self.code}"
         r = requests.get(url)
         changes = pd.read_html(r.text)[0]
         changes.columns = ["date", "after", "before"]
@@ -72,7 +73,7 @@ class Stocks(Base):
         Returns:
             pd.DataFrame: return day of shares changes and shares count [date, new_shares, old_shares, gdate]
         """
-        url = f"http://www.tsetmc.com/Loader.aspx?Partree=15131H&i={self.code}"
+        url = f"{BASE_URL}/Loader.aspx?Partree=15131H&i={self.code}"
         r = requests.get(url)
         df = pd.read_html(r.text)[0]
         df.columns = ["date", "new_shares", "old_shares"]
@@ -120,7 +121,7 @@ class Stocks(Base):
             dict: { last_price, last_close, last_open, last_high, last_low, last_vol, trade_count, trade_value,market_cap}
         """
         url = (
-            f"http://www.tsetmc.com/tsev2/data/instinfodata.aspx?i={self.code}&c=27%20"
+            f"{BASE_URL}/tsev2/data/instinfodata.aspx?i={self.code}&c=27%20"
         )
         headers = {
             "Connection": "keep-alive",

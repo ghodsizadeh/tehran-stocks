@@ -4,10 +4,10 @@ import re
 import time
 import tehran_stocks.config as db
 from tehran_stocks.models import Stocks
-
+from .base import BASE_URL
 
 def get_stock_ids():
-    url = "http://tsetmc.com/tsev2/data/MarketWatchPlus.aspx"
+    url = f"{BASE_URL}/tsev2/data/MarketWatchPlus.aspx"
     r = requests.get(url)
     ids = set(re.findall(r"\d{15,20}", r.text))
     return list(ids)
@@ -18,8 +18,8 @@ def get_stock_groups():
     group numbers from tccim, to avoid searching useless group numbers.
     its a helper for other parts of package to collect stock lists.
     """
-    r = requests.get("http://www.tsetmc.com/Loader.aspx?ParTree=111C1213")
-    return re.findall(r"\d{2}", r.text)
+    r = requests.get(f"{BASE_URL}/Loader.aspx?ParTree=111C1213")
+    return list(set(re.findall(r"\d{2}", r.text)))
 
 
 def create_or_update_stock_from_dict(stock_id, stock):
@@ -51,12 +51,15 @@ def get_stock_detail(stock_id: str) -> Stocks:
 
     """
 
-    url = f"http://www.tsetmc.com/Loader.aspx?ParTree=151311&i={stock_id}"
+    url = f"{BASE_URL}/Loader.aspx?ParTree=151311&i={stock_id}"
     r = requests.get(url)
-    stock = {
-        "code": stock_id,
-        "instId": re.findall(r"InstrumentID='([\w\d]*)|$',", r.text)[0],
-    }
+    try:
+        stock = {
+            "code": stock_id,
+            "instId": re.findall(r"InstrumentID='([\w\d]*)|$',", r.text)[0],
+        }
+    except IndexError:
+        return 
 
     stock["insCode"] = (
         stock_id if re.findall(r"InsCode='(\d*)',", r.text)[0] == stock_id else 0
@@ -112,28 +115,28 @@ def fill_stock_table():
     4- save them to database
     5- guides you to use the package
     """
-    URL = "https://ts-api.ir/api/stocks"
-    try:
-        print("try Downloading stock table from the package api... ")
-        print("visit: https://ts-api.ir/")
-        r = requests.get(URL)
-        if r.status_code != 200:
-            raise ConnectionError("connection error")
-        data = r.json()
-        stocks = data["stocks"]
-        db.session.rollback()
-        for stock in stocks:
-            del stock["id"]
-            create_or_update_stock_from_dict(stock["code"], stock)
-        db.session.commit()
-        return
+    # URL = "https://ts-api.ir/api/stocks"
+    # try:
+    #     print("try Downloading stock table from the package api... ")
+    #     print("visit: https://ts-api.ir/")
+    #     r = requests.get(URL)
+    #     if r.status_code != 200:
+    #         raise ConnectionError("connection error")
+    #     data = r.json()
+    #     stocks = data["stocks"]
+    #     db.session.rollback()
+    #     for stock in stocks:
+    #         del stock["id"]
+    #         create_or_update_stock_from_dict(stock["code"], stock)
+    #     db.session.commit()
+    #     return
 
-    except ConnectionError:
-        print("fall back to manual mode")
-        pass
-    except Exception as e:
-        print(e)
-        pass
+    # except ConnectionError:
+    #     print("fall back to manual mode")
+    #     pass
+    # except Exception as e:
+    #     print(e)
+    #     pass
     print("Downloading group ids...")
     stocks = get_stock_ids()
     for i, stock in enumerate(stocks):
