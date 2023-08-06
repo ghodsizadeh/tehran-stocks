@@ -25,5 +25,5 @@ async def test_update_stock_price():
     status, code = await download.update_stock_price(SAIPA)
     assert status == True
     assert code == SAIPA
-    status, code = await download.update_stock_price(SAIPA+'121')
+    status, code = await download.update_stock_price(f'{SAIPA}121')
     assert status != True
