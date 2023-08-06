@@ -4,7 +4,7 @@ import re
 import time
 import tehran_stocks.config as db
 from tehran_stocks.models import Stocks
-BASE_URL = "http://old.tsetmc.com"
+from .base import BASE_URL
 
 def get_stock_ids():
     url = f"{BASE_URL}/tsev2/data/MarketWatchPlus.aspx"

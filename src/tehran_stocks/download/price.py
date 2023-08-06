@@ -10,6 +10,7 @@ import io
 
 import tehran_stocks.config as db
 from tehran_stocks.models import StockPrice, Stocks
+from .base import BASE_URL
 
 
 def convert_to_shamsi(date):
@@ -25,7 +26,7 @@ def get_stock_price_history(stock_id: int) -> pd.DataFrame:
     params:
     ----------------
     stock_id: int
-        http://www.tsetmc.com/Loader.aspx?ParTree=151311&i=**35700344742885862#**
+        http://www.old.tsetmc.com/Loader.aspx?ParTree=151311&i=**35700344742885862#**
         number after i=
 
     return:
@@ -43,10 +44,13 @@ def get_stock_price_history(stock_id: int) -> pd.DataFrame:
     df = get_stock_price_history(35700344742885862)
     """
     now = datetime.now().strftime("%Y%m%d")
-    url = f"http://www.tsetmc.com/tse/data/Export-txt.aspx?a=InsTrade&InsCode={stock_id}&DateFrom=20000101&DateTo={now}&b=0"
+    url = f"{BASE_URL}/tse/data/Export-txt.aspx?a=InsTrade&InsCode={stock_id}&DateFrom=20000101&DateTo={now}&b=0"
+
     s = requests.get(url).content
     df = pd.read_csv(io.StringIO(s.decode("utf-8")))
     df.columns = [i[1:-1].lower() for i in df.columns]
+    if not  ('ticker' in df.columns and 'close' in df.columns):
+        return pd.DataFrame()
     return df
 
 
@@ -80,9 +84,9 @@ async def update_stock_price(code: str):
             last_date = None
         try:
             if last_date is None:  # no any record added in database
-                url = f"http://www.tsetmc.com/tse/data/Export-txt.aspx?a=InsTrade&InsCode={code}&DateFrom=20000101&DateTo={now}&b=0"
+                url = f"{BASE_URL}/tse/data/Export-txt.aspx?a=InsTrade&InsCode={code}&DateFrom=20000101&DateTo={now}&b=0"
             elif str(last_date) < now:  # need to updata new price data
-                url = f"http://www.tsetmc.com/tse/data/Export-txt.aspx?a=InsTrade&InsCode={code}&DateFrom={str(last_date)}&DateTo={now}&b=0"
+                url = f"{BASE_URL}/tse/data/Export-txt.aspx?a=InsTrade&InsCode={code}&DateFrom={str(last_date)}&DateTo={now}&b=0"
             else:  # The price data for this code is updateed
                 return
         except Exception as e:
