@@ -49,7 +49,7 @@ def get_stock_price_history(stock_id: int) -> pd.DataFrame:
     s = requests.get(url).content
     df = pd.read_csv(io.StringIO(s.decode("utf-8")))
     df.columns = [i[1:-1].lower() for i in df.columns]
-    if not  ('ticker' in df.columns and 'close' in df.columns):
+    if 'ticker' not in df.columns or 'close' not in df.columns:
         return pd.DataFrame()
     return df
 
