@@ -172,6 +172,47 @@ class Stocks(Base):
     def __str__(self):
         return self.name
 
+    def get_instant_client_type(self):
+        url = f"http://tsetmc.ir/tsev2/data/instinfodata.aspx?i={self.code}&c=68%20"
+        client_type = {}
+        headers = {
+            "Connection": "keep-alive",
+            "Accept": "text/plain, */*; q=0.01",
+            "DNT": "1",
+            "X-Requested-With": "XMLHttpRequest",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.74 Safari/537.36",
+        }
+        r = requests.get(url, headers=headers)
+        try:
+            response = r.text.split('@')[25].split(';')[2].split(',')
+        except IndexError:
+            response = []
+        if len(response)>1:
+            client_type['individual_buy_volume'] = response[0]
+            client_type['institutional_buy_volume'] = response[1]
+            client_type['individual_sell_volume'] = response[3]
+            client_type['institutional_sell_volume'] = response[4]
+            client_type['individual_buy_count'] = response[5]
+            client_type['institutional_buy_count'] = response[6]
+            client_type['individual_sell_count'] = response[8]
+            client_type['institutional_sell_count'] = response[9]
+
+        return client_type
+
+    def get_client_type_history(self):
+        url = f'http://tsetmc.ir/tsev2/data/clienttype.aspx?i={self.code}'
+        r = requests.get(url)
+        r = r.text.split(';')
+        df = pd.DataFrame([sub.split(",") for sub in r])
+        df.columns = ["gdate", "individual_buy_count", "institutional_buy_count", "individual_sell_count",
+                      "institutional_sell_count", "individual_buy_volume", "institutional_buy_volume",
+                      "individual_sell_volume", "institutional_sell_volume", "individual_buy_value",
+                      "institutional_buy_value", "individual_sell_value", "institutional_sell_value"]
+        df["gdate"] = pd.to_datetime(df["gdate"])
+        df['date'] = df.gdate.jalali.to_jalali()
+        return df
+
+
     @staticmethod
     def get_group():
         return (
