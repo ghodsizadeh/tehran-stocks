@@ -2,7 +2,6 @@ from tehran_stocks.config import *
 from sqlalchemy.orm import relationship
 import pandas as pd
 import requests
-import jalali_pandas
 from tehran_stocks.download.base import BASE_URL
 
 

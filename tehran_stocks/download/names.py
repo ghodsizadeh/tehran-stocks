@@ -1,7 +1,5 @@
-from asyncio import tasks
 import requests
 import re
-import time
 import tehran_stocks.config as db
 from tehran_stocks.models import Stocks
 from .base import BASE_URL

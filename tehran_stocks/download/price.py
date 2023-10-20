@@ -1,5 +1,3 @@
-import re
-import time
 from jdatetime import date as jdate
 from datetime import datetime
 import asyncio
@@ -9,7 +7,7 @@ import requests
 import io
 
 import tehran_stocks.config as db
-from tehran_stocks.models import StockPrice, Stocks
+from tehran_stocks.models import Stocks
 from .base import BASE_URL
 
 
@@ -80,7 +78,7 @@ async def update_stock_price(code: str):
             )
             max_date = pd.read_sql(max_date_query, db.engine)
             last_date = max_date.date.iat[0]
-        except Exception as e:
+        except Exception:
             last_date = None
         try:
             if last_date is None:  # no any record added in database

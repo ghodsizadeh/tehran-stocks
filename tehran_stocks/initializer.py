@@ -1,6 +1,6 @@
 import os
 
-from tehran_stocks import db, models, update_group, get_all_price
+from tehran_stocks import db, models, get_all_price
 from tehran_stocks.download import fill_stock_table
 
 
