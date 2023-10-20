@@ -13,6 +13,7 @@ def test_id_from_group():
 def test_get_groups():
     groups = download.get_stock_groups()
     size = len(groups)
+    breakpoint()
     assert size > 60, "there is a problem during downloading groups"
 
 

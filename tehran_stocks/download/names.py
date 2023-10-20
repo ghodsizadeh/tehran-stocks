@@ -19,6 +19,7 @@ def get_stock_groups():
     its a helper for other parts of package to collect stock lists.
     """
     r = requests.get(f"{BASE_URL}/Loader.aspx?ParTree=111C1213")
+    breakpoint()
     return list(set(re.findall(r"\d{2}", r.text)))
 
 
