@@ -3,19 +3,20 @@ from tehran_stocks import download
 
 SAIPA = "44891482026867833"
 
-
+@pytest.mark.online
 def test_id_from_group():
     ids = download.get_stock_ids()
     assert ids, "no id available"
     assert SAIPA in ids, "Saipa is not in group"
 
+@pytest.mark.online
 
 def test_get_groups():
     groups = download.get_stock_groups()
     size = len(groups)
-    breakpoint()
     assert size > 60, "there is a problem during downloading groups"
 
+@pytest.mark.online
 
 def test_get_detail():
     data = download.get_stock_detail(SAIPA)

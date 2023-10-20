@@ -1,0 +1,1 @@
+from .groups import IndustryGroup

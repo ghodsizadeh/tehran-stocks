@@ -4,6 +4,7 @@ from tehran_stocks.download.price import get_stock_price_history
 
 SAIPA = "44891482026867833"
 
+@pytest.mark.online
 
 def test_get_stock_price_history():
     data = get_stock_price_history(SAIPA)
@@ -19,7 +20,7 @@ def test_get_stock_price_history():
     'per',  
     'open']
     assert data.columns.tolist() == columns
-
+@pytest.mark.online
 @pytest.mark.asyncio
 async def test_update_stock_price():
     status, code = await download.update_stock_price(SAIPA)
