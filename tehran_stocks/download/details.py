@@ -4,14 +4,14 @@
 # then use the schema to create dataclass
 # then use the dataclass to return data
 # everything is async, everything should handle errors
-import asyncio
 import aiohttp
-import json
-from pydantic.dataclasses import dataclass
-from typing import List, Dict, Any, Optional
-from .base import BASE_URL, NEW_BASE_URL, CDN_URL
-from pydantic import BaseModel, Field, Extra
-from tehran_stocks.schema.details import InstrumentInfo
+from typing import Dict, Any
+from .base import NEW_BASE_URL, CDN_URL
+from tehran_stocks.schema.details import (
+    InstrumentInfo,
+    InstrumentState,
+    TradeClientType,
+)
 
 # http://www.tsetmc.com/instInfo/48990026850202503
 # http://cdn.tsetmc.com/api/Instrument/GetInstrumentInfo/48990026850202503
@@ -36,7 +36,7 @@ from tehran_stocks.schema.details import InstrumentInfo
 # {'instrumentInfo': {'eps': {'epsValue': None, 'estimatedEPS': '51', 'sectorPE': -5.31, 'psr': 0.0}, 'sector': {'dEven': 0, 'cSecVal': '34 ', 'lSecVal': 'خودرو و ساخت قطعات'}, 'staticThreshold': {'insCode': None, 'dEven': 0, 'hEven': 0, 'psGelStaMax': 4532.0, 'psGelStaMin': 3940.0}, 'minWeek': 4150.0, 'maxWeek': 4529.0, 'minYear': 2726.0, 'maxYear': 7850.0, 'qTotTran5JAvg': 131124369.0, 'kAjCapValCpsIdx': '52', 'dEven': 20231021, 'topInst': 1, 'faraDesc': '', 'contractSize': 0, 'nav': 0.0, 'underSupervision': 0, 'cValMne': None, 'lVal18': 'Iran Kh. Inv.', 'cSocCSAC': None, 'lSoc30': None, 'yMarNSC': None, 'yVal': '300', 'insCode': '48990026850202503', 'lVal30': 'گسترش\u200cسرمايه\u200cگذاري\u200cايران\u200cخودرو', 'lVal18AFC': 'خگستر', 'flow': 1, 'cIsin': 'IRO1GOST0003', 'zTitad': 39605137000.0, 'baseVol': 15842055, 'instrumentID': 'IRO1GOST0001', 'cgrValCot': 'N1', 'cComVal': '1', 'lastDate': 0, 'sourceID': 0, 'flowTitle': 'بازار بورس', 'cgrValCotTitle': 'بازار اول (تابلوی اصلی) بورس'}}
 
 
-    # classq
+# classq
 
 
 class TseDetailsAPI:
@@ -55,7 +55,6 @@ class TseDetailsAPI:
         }
 
         async with self.session.get(url, headers=headers) as resp:
-            text = await resp.text()
             if resp.status != 200:
                 raise Exception(f"Error fetching {url}: response code {resp.status}")
             return await resp.json()
@@ -65,10 +64,16 @@ class TseDetailsAPI:
         data = await self._fetch(url)
         return InstrumentInfo(**data["instrumentInfo"])
 
+    async def get_codal(self) -> Dict[str, Any]:
+        url = f"{self.cdn_url}/api/Codal/GetPreparedDataByInsCode/9/{self.inscode}"
+        return await self._fetch(url)
 
-if __name__ == "__main__":
-    import asyncio
+    async def get_instrument_state_top(self) -> InstrumentState:
+        url = f"{self.cdn_url}/api/MarketData/GetInstrumentStateTop/1"
+        data = await self._fetch(url)
+        return InstrumentState(**data["instrumentState"][0])
 
-    loop = asyncio.get_event_loop()
-    tse = TseDetailsAPI("48990026850202503")
-    print(loop.run_until_complete(tse.get_instrument_info()))
+    async def get_client_type(self) -> TradeClientType:
+        url = f"{self.cdn_url}/api/ClientType/GetClientType/{self.inscode}/1/0"
+        data = await self._fetch(url)
+        return TradeClientType(**data["clientType"])

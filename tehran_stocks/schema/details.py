@@ -1,4 +1,4 @@
-from typing import  Optional
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -46,3 +46,43 @@ class InstrumentInfo(BaseModel):
     name: Optional[str] = Field(alias="lVal18AFC")
     eps: Optional[Eps]
     sector: Optional[Sector]
+
+
+class InstrumentState(BaseModel):
+    idn: Optional[int]
+    d_even: Optional[int] = Field(alias="dEven")
+    h_even: Optional[int] = Field(alias="hEven")
+    ins_code: Optional[str] = Field(alias="insCode")
+    full_name: Optional[str] = Field(alias="lVal30")
+    name: Optional[str] = Field(alias="lVal18AFC")
+    c_etaval: Optional[str] = Field(alias="cEtaval")
+    real_heven: Optional[int] = Field(alias="realHeven")
+    under_supervision: Optional[int] = Field(alias="underSupervision")
+    c_etaval_title: Optional[str] = Field(alias="cEtavalTitle")
+
+
+# {
+#     "clientType": {
+#         "buy_I_Volume": 117325549.0, # حقیقی
+#         "buy_N_Volume": 2400000.0, # حقوقی
+#         "buy_DDD_Volume": 0.0,
+#         "buy_CountI": 1367, # تعداد حقیقی
+#         "buy_CountN": 1,  # تعداد حقوقی
+#         "buy_CountDDD": 0,
+#         "sell_I_Volume": 99671572.0,
+#         "sell_N_Volume": 20053977.0,
+#         "sell_CountI": 1713,
+#         "sell_CountN": 12
+#     }
+# }
+class TradeClientType(BaseModel):
+    buy_volume_individual: Optional[float] = Field(alias="buy_I_Volume")
+    buy_volume_legal: Optional[float] = Field(alias="buy_N_Volume")
+    buy_volume_legal_foreign: Optional[float] = Field(alias="buy_DDD_Volume")
+    buy_count_individual: Optional[int] = Field(alias="buy_CountI")
+    buy_count_legal: Optional[int] = Field(alias="buy_CountN")
+    buy_count_legal_foreign: Optional[int] = Field(alias="buy_CountDDD")
+    sell_volume_individual: Optional[float] = Field(alias="sell_I_Volume")
+    sell_volume_legal: Optional[float] = Field(alias="sell_N_Volume")
+    sell_count_individual: Optional[int] = Field(alias="sell_CountI")
+    sell_count_legal: Optional[int] = Field(alias="sell_CountN")
