@@ -12,7 +12,6 @@ from tehran_stocks.schema.details import (
     InstrumentState,
     TradeClientType,
 )
-
 # http://www.tsetmc.com/instInfo/48990026850202503
 # http://cdn.tsetmc.com/api/Instrument/GetInstrumentInfo/48990026850202503
 # http://cdn.tsetmc.com/api/Codal/GetPreparedDataByInsCode/9/48990026850202503

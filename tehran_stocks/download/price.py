@@ -1,13 +1,15 @@
-from jdatetime import date as jdate
-from datetime import datetime
 import asyncio
+import io
+from datetime import datetime
+from typing import Optional
+
 import aiohttp
 import pandas as pd
-import requests
-import io
+from jdatetime import date as jdate
 
 import tehran_stocks.config as db
 from tehran_stocks.models import Stocks
+
 from .base import BASE_URL
 
 
@@ -18,7 +20,7 @@ def convert_to_shamsi(date):
     ).strftime("%Y/%m/%d")
 
 
-def get_stock_price_history(stock_id: int) -> pd.DataFrame:
+async def get_stock_price_history(ins_id: int, start_date : Optional[str] = None, end_date : Optional[str] = None, jalali: bool = True) -> pd.DataFrame:
     """Get stock price history from the web.
 
     params:
@@ -41,14 +43,42 @@ def get_stock_price_history(stock_id: int) -> pd.DataFrame:
     ----------------
     df = get_stock_price_history(35700344742885862)
     """
-    now = datetime.now().strftime("%Y%m%d")
-    url = f"{BASE_URL}/tse/data/Export-txt.aspx?a=InsTrade&InsCode={stock_id}&DateFrom=20000101&DateTo={now}&b=0"
+    # async def _fetch(self, url: str) -> Dict[str, Any]:
+    headers = {
+            "Origin": "http://www.tsetmc.com",
+            "Pragma": "no-cache",
+            "Referer": "http://www.tsetmc.com/",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36",
+        }
+    session= aiohttp.ClientSession()
 
-    s = requests.get(url).content
-    df = pd.read_csv(io.StringIO(s.decode("utf-8")))
+    
+    url = f"{BASE_URL}/tse/data/Export-txt.aspx?a=InsTrade&InsCode={ins_id}"
+    if start_date is  None:
+        start_date = '20000101'
+        # url += f"&DateFrom={start_date}"
+    if end_date is  None:
+        end_date = datetime.now().strftime("%Y%m%d")
+        # url += f"&DateTo={end_date}"
+
+    url += f"&DateFrom={start_date}&DateTo={end_date}&b=0"
+
+
+
+
+    # url = f"{BASE_URL}/tse/data/Export-txt.aspx?a=InsTrade&InsCode={ins_id}&DateFrom=20000101&DateTo={now}&b=0"
+    async with session.get(url, headers=headers) as resp:
+        if resp.status != 200:
+            raise Exception(f"Error fetching {url}: response code {resp.status}")
+        text =  await resp.text()
+    s = text
+    df = pd.read_csv(io.StringIO(s))
     df.columns = [i[1:-1].lower() for i in df.columns]
     if 'ticker' not in df.columns or 'close' not in df.columns:
         return pd.DataFrame()
+    if jalali:
+        df["date_shamsi"] = df["dtyyyymmdd"].apply(convert_to_shamsi)
+    breakpoint()
     return df
 
 
@@ -101,8 +131,8 @@ async def update_stock_price(code: str):
             q = f"select dtyyyymmdd as date from stock_price where code = '{code}'"
             temp = pd.read_sql(q, db.engine)
             df = df[~df.dtyyyymmdd.isin(temp.date)]
-        except:
-            pass
+        except Exception as e:
+            print(f"Error on formating price:{str(e)}")
         df.to_sql("stock_price", db.engine, if_exists="append", index=False)
         return True, code
 
