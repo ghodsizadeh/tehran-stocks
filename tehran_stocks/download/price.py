@@ -78,7 +78,6 @@ async def get_stock_price_history(ins_id: int, start_date : Optional[str] = None
         return pd.DataFrame()
     if jalali:
         df["date_shamsi"] = df["dtyyyymmdd"].apply(convert_to_shamsi)
-    breakpoint()
     return df
 
 

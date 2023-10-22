@@ -11,7 +11,9 @@ from tehran_stocks.schema.details import (
     InstrumentInfo,
     InstrumentState,
     TradeClientType,
-    Trade
+    Trade,
+    ClosingPriceData
+
 )
 # http://www.tsetmc.com/instInfo/48990026850202503
 # http://cdn.tsetmc.com/api/Instrument/GetInstrumentInfo/48990026850202503
@@ -42,11 +44,13 @@ from tehran_stocks.schema.details import (
 class TseDetailsAPI:
     def __init__(self, inscode: str):
         self.inscode = inscode
-        self.session = aiohttp.ClientSession()
+        self.session = None
         self.base_url = NEW_BASE_URL
         self.cdn_url = CDN_URL
 
     async def _fetch(self, url: str) -> Dict[str, Any]:
+        if self.session is None:
+            self.session = aiohttp.ClientSession()
         headers = {
             "Origin": "http://www.tsetmc.com",
             "Pragma": "no-cache",
@@ -82,4 +86,9 @@ class TseDetailsAPI:
         url = f"{self.cdn_url}/api/Trade/GetTrade/{self.inscode}"
         data = await self._fetch(url)
         return [Trade(**i) for i in data["trade"]]
+    
+    async def get_closing_price_info(self) -> ClosingPriceData:
+        url = f"{self.cdn_url}/api/ClosingPrice/GetClosingPriceInfo/{self.inscode}"
+        data = await self._fetch(url)
+        return ClosingPriceData(**data["closingPriceInfo"])
     

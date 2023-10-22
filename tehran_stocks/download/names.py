@@ -3,7 +3,6 @@ import re
 import tehran_stocks.config as db
 from tehran_stocks.models import Stocks
 from .base import BASE_URL
-
 def get_stock_ids():
     url = f"{BASE_URL}/tsev2/data/MarketWatchPlus.aspx"
     r = requests.get(url)
@@ -17,7 +16,6 @@ def get_stock_groups():
     its a helper for other parts of package to collect stock lists.
     """
     r = requests.get(f"{BASE_URL}/Loader.aspx?ParTree=111C1213")
-    breakpoint()
     return list(set(re.findall(r"\d{2}", r.text)))
 
 
