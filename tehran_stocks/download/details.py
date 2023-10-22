@@ -5,12 +5,13 @@
 # then use the dataclass to return data
 # everything is async, everything should handle errors
 import aiohttp
-from typing import Dict, Any
+from typing import Dict, Any, List
 from .base import NEW_BASE_URL, CDN_URL
 from tehran_stocks.schema.details import (
     InstrumentInfo,
     InstrumentState,
     TradeClientType,
+    Trade
 )
 # http://www.tsetmc.com/instInfo/48990026850202503
 # http://cdn.tsetmc.com/api/Instrument/GetInstrumentInfo/48990026850202503
@@ -76,3 +77,9 @@ class TseDetailsAPI:
         url = f"{self.cdn_url}/api/ClientType/GetClientType/{self.inscode}/1/0"
         data = await self._fetch(url)
         return TradeClientType(**data["clientType"])
+
+    async def  get_trade(self) -> List[Trade]:
+        url = f"{self.cdn_url}/api/Trade/GetTrade/{self.inscode}"
+        data = await self._fetch(url)
+        return [Trade(**i) for i in data["trade"]]
+    

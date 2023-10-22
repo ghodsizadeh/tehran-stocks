@@ -1,5 +1,5 @@
 from tehran_stocks.download.details import TseDetailsAPI
-from tehran_stocks.schema.details import InstrumentInfo, InstrumentState, TradeClientType
+from tehran_stocks.schema.details import InstrumentInfo, InstrumentState, Trade, TradeClientType
 import pytest
 from datetime import datetime
 
@@ -36,3 +36,12 @@ async def test_get_client(api):
     assert data is not None
     assert isinstance(data, TradeClientType)
     
+
+@pytest.mark.online
+@pytest.mark.asyncio
+async def test_get_trade(api):
+    data = await api.get_trade()
+    assert data is not None
+    assert isinstance(data, list)
+    assert len(data) > 0
+    assert isinstance(data[0], Trade)

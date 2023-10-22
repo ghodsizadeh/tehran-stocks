@@ -86,3 +86,19 @@ class TradeClientType(BaseModel):
     sell_volume_legal: Optional[float] = Field(alias="sell_N_Volume")
     sell_count_individual: Optional[int] = Field(alias="sell_CountI")
     sell_count_legal: Optional[int] = Field(alias="sell_CountN")
+# {"insCode":null,"dEven":0,"nTran":1,"hEven":90016,"qTitTran":71391,"pTran":4350.00,"qTitNgJ":0,"iSensVarP":"\u0000","pPhSeaCotJ":0.0,"pPbSeaCotJ":0.0,"iAnuTran":0,"xqVarPJDrPRf":0.0,"canceled":0},
+
+class Trade(BaseModel):
+    ins_code: Optional[str] = Field(alias="insCode")
+    d_even: Optional[int] = Field(alias="dEven")
+    n_tran: Optional[int] = Field(alias="nTran")
+    h_even: Optional[int] = Field(alias="hEven")
+    volume: Optional[int] = Field(alias="qTitTran")
+    price: Optional[float] = Field(alias="pTran")
+    volume_ng: Optional[int] = Field(alias="qTitNgJ")
+    i_sens_varp: Optional[str] = Field(alias="iSensVarP")
+    p_ph_sea_cotj: Optional[float] = Field(alias="pPhSeaCotJ")
+    p_pb_sea_cotj: Optional[float] = Field(alias="pPbSeaCotJ")
+    i_anu_tran: Optional[int] = Field(alias="iAnuTran")
+    xq_var_pjdr_prf: Optional[float] = Field(alias="xqVarPJDrPRf")
+    canceled: Optional[int]
