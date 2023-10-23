@@ -78,7 +78,9 @@ class InstrumentState(BaseModel):
 class TradeClientType(BaseModel):
     buy_volume_individual: Optional[float] = Field(default=None, alias="buy_I_Volume")
     buy_volume_legal: Optional[float] = Field(default=None, alias="buy_N_Volume")
-    buy_volume_legal_foreign: Optional[float] = Field(default=None, alias="buy_DDD_Volume")
+    buy_volume_legal_foreign: Optional[float] = Field(
+        default=None, alias="buy_DDD_Volume"
+    )
     buy_count_individual: Optional[int] = Field(default=None, alias="buy_CountI")
     buy_count_legal: Optional[int] = Field(default=None, alias="buy_CountN")
     buy_count_legal_foreign: Optional[int] = Field(default=None, alias="buy_CountDDD")
@@ -86,7 +88,10 @@ class TradeClientType(BaseModel):
     sell_volume_legal: Optional[float] = Field(default=None, alias="sell_N_Volume")
     sell_count_individual: Optional[int] = Field(default=None, alias="sell_CountI")
     sell_count_legal: Optional[int] = Field(default=None, alias="sell_CountN")
+
+
 # {"insCode":null,"dEven":0,"nTran":1,"hEven":90016,"qTitTran":71391,"pTran":4350.00,"qTitNgJ":0,"iSensVarP":"\u0000","pPhSeaCotJ":0.0,"pPbSeaCotJ":0.0,"iAnuTran":0,"xqVarPJDrPRf":0.0,"canceled":0},
+
 
 class Trade(BaseModel):
     ins_code: Optional[str] = Field(default=None, alias="insCode")
@@ -106,6 +111,7 @@ class Trade(BaseModel):
 
 # {"closingPriceInfo":{"instrumentState":{"idn":0,"dEven":0,"hEven":0,"insCode":null,"cEtaval":"A ","realHeven":0,"underSupervision":0,"cEtavalTitle":"مجاز"},"instrument":null,"lastHEven":103950,"finalLastDate":20231022,"nvt":0.0,"mop":0,"thirtyDayClosingHistory":null,"priceChange":0.0,"priceMin":4296.00,"priceMax":4429.00,"priceYesterday":4371.00,"priceFirst":4350.00,"last":false,"id":0,"insCode":"0","dEven":20231022,"hEven":103950,"pClosing":4378.00,"iClose":false,"yClose":false,"pDrCotVal":4360.00,"zTotTran":2509.0,"qTotTran5J":55169799.0,"qTotCap":241525532962.00}}
 
+
 class ClosingPriceData(BaseModel):
     instrument_state: InstrumentState = Field(default=None, alias="instrumentState")
     instrument: Optional[InstrumentInfo]
@@ -113,7 +119,9 @@ class ClosingPriceData(BaseModel):
     final_last_date: Optional[int] = Field(default=None, alias="finalLastDate")
     nvt: Optional[float]
     mop: Optional[int]
-    thirty_day_closing_history: Optional[str] = Field(default=None, alias="thirtyDayClosingHistory")
+    thirty_day_closing_history: Optional[str] = Field(
+        default=None, alias="thirtyDayClosingHistory"
+    )
     price_change: Optional[float] = Field(default=None, alias="priceChange")
     price_min: Optional[float] = Field(default=None, alias="priceMin")
     price_max: Optional[float] = Field(default=None, alias="priceMax")
@@ -131,3 +139,29 @@ class ClosingPriceData(BaseModel):
     z_tot_tran: Optional[float] = Field(default=None, alias="zTotTran")
     q_tot_tran_5j: Optional[float] = Field(default=None, alias="qTotTran5J")
     q_tot_cap: Optional[float] = Field(default=None, alias="qTotCap")
+
+
+class BestLimit(BaseModel):
+    number: Optional[int]
+    volume_buy: Optional[int] = Field(default=None, alias="qTitMeDem")
+    count_buy: Optional[int] = Field(default=None, alias="zOrdMeDem")
+    price_buy: Optional[float] = Field(default=None, alias="pMeDem")
+    price_sell: Optional[float] = Field(default=None, alias="pMeOf")
+    count_sell: Optional[int] = Field(default=None, alias="zOrdMeOf")
+    volume_sell: Optional[int] = Field(default=None, alias="qTitMeOf")
+    ins_code: Optional[str] = Field(default=None, alias="insCode")
+
+
+class BestLimitHistory(BaseModel):
+    idn: Optional[int]
+    d_even: Optional[int] = Field(default=None, alias="dEven")
+    h_even: Optional[int] = Field(default=None, alias="hEven")
+    ref_id: Optional[int] = Field(default=None, alias="refID")
+    number: Optional[int]
+    volume_buy: Optional[int] = Field(default=None, alias="qTitMeDem")
+    count_buy: Optional[int] = Field(default=None, alias="zOrdMeDem")
+    price_buy: Optional[float] = Field(default=None, alias="pMeDem")
+    price_sell: Optional[float] = Field(default=None, alias="pMeOf")
+    count_sell: Optional[int] = Field(default=None, alias="zOrdMeOf")
+    volume_sell: Optional[int] = Field(default=None, alias="qTitMeOf")
+    ins_code: Optional[str] = Field(default=None, alias="insCode")

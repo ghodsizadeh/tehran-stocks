@@ -4,16 +4,18 @@
 # then use the schema to create dataclass
 # then use the dataclass to return data
 # everything is async, everything should handle errors
+from datetime import datetime
 import aiohttp
 from typing import Dict, Any, List
 from .base import NEW_BASE_URL, CDN_URL
 from tehran_stocks.schema.details import (
+    BestLimitHistory,
     InstrumentInfo,
     InstrumentState,
     TradeClientType,
     Trade,
-    ClosingPriceData
-
+    ClosingPriceData,
+    BestLimit,
 )
 # http://www.tsetmc.com/instInfo/48990026850202503
 # http://cdn.tsetmc.com/api/Instrument/GetInstrumentInfo/48990026850202503
@@ -82,13 +84,27 @@ class TseDetailsAPI:
         data = await self._fetch(url)
         return TradeClientType(**data["clientType"])
 
-    async def  get_trade(self) -> List[Trade]:
+    async def get_trade(self) -> List[Trade]:
         url = f"{self.cdn_url}/api/Trade/GetTrade/{self.inscode}"
         data = await self._fetch(url)
         return [Trade(**i) for i in data["trade"]]
-    
+
     async def get_closing_price_info(self) -> ClosingPriceData:
         url = f"{self.cdn_url}/api/ClosingPrice/GetClosingPriceInfo/{self.inscode}"
         data = await self._fetch(url)
         return ClosingPriceData(**data["closingPriceInfo"])
-    
+
+    async def get_best_limits(self, date: str | datetime | None = None) -> BestLimit:
+        url = f"{self.cdn_url}/api/BestLimits/{self.inscode}"
+        data = await self._fetch(url)
+        return BestLimit(**data["bestLimits"][0])
+
+    # http://cdn.tsetmc.com/api/BestLimits/48990026850202503/20231015
+    async def get_best_limit_history(
+        self, date: str | datetime
+    ) -> List[BestLimitHistory]:
+        if isinstance(date, datetime):
+            date = date.strftime("%Y%m%d")
+        url = f"{self.cdn_url}/api/BestLimits/{self.inscode}/{date}"
+        data = await self._fetch(url)
+        return [BestLimitHistory(**i) for i in data["bestLimitsHistory"]]
