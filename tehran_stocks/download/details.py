@@ -43,7 +43,17 @@ from tehran_stocks.schema.details import (
 # classq
 
 
-class TseDetailsAPI:
+class InstrumentDetailAPI:
+    """
+    A class for fetching details of a stock from the Tehran Stock Exchange (TSE) using its instrument code.
+
+    Attributes:
+        inscode (str): The instrument code of the stock.
+        session (aiohttp.ClientSession): The HTTP session used for making requests.
+        base_url (str): The base URL for making requests to the TSE API.
+        cdn_url (str): The URL for the TSE Content Delivery Network (CDN) API.
+    """
+
     def __init__(self, inscode: str):
         self.inscode = inscode
         self.session = None
@@ -107,4 +117,4 @@ class TseDetailsAPI:
             date = date.strftime("%Y%m%d")
         url = f"{self.cdn_url}/api/BestLimits/{self.inscode}/{date}"
         data = await self._fetch(url)
-        return [BestLimitHistory(**i) for i in data["bestLimitsHistory"]]
+        return [BestLimitHistory(**i) for i in data["bestLimits"]]

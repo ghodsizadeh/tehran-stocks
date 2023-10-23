@@ -1,4 +1,4 @@
-from tehran_stocks.download.details import TseDetailsAPI
+from tehran_stocks.download.details import InstrumentDetailAPI
 from tehran_stocks.schema.details import (
     BestLimit,
     BestLimitHistory,
@@ -16,12 +16,12 @@ from datetime import datetime
 def api():
     insCode = "48990026850202503"
 
-    return TseDetailsAPI(insCode)
+    return InstrumentDetailAPI(insCode)
 
 
 @pytest.mark.online
 @pytest.mark.asyncio
-async def test_get_details(api: TseDetailsAPI):
+async def test_get_details(api: InstrumentDetailAPI):
     data = await api.get_instrument_info()
     assert data is not None
     assert isinstance(data, InstrumentInfo)
@@ -32,7 +32,7 @@ async def test_get_details(api: TseDetailsAPI):
 
 @pytest.mark.online
 @pytest.mark.asyncio
-async def test_get_instrument_state(api: TseDetailsAPI):
+async def test_get_instrument_state(api: InstrumentDetailAPI):
     data = await api.get_instrument_state_top()
     assert data is not None
     assert isinstance(data, InstrumentState)
