@@ -7,9 +7,7 @@ license = "MIT"
 readme = "README.md"
 homepage = "https://ghodsizadeh.github.io/tehran-stocks/"
 repository = "https://github.com/ghodsizadeh/tehran-stocks.git"
-packages = [
-    { include = "tehran_stocks", from = 'src' }
-]
+
 
 
 [tool.poetry.dependencies]
