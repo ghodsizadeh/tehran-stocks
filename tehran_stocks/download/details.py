@@ -5,9 +5,8 @@
 # then use the dataclass to return data
 # everything is async, everything should handle errors
 from datetime import datetime
-import aiohttp
 from typing import Dict, Any, List
-from .base import NEW_BASE_URL, CDN_URL
+from .base import NEW_BASE_URL, CDN_URL, FetchMixin
 from tehran_stocks.schema.details import (
     BestLimitHistory,
     InstrumentInfo,
@@ -17,23 +16,6 @@ from tehran_stocks.schema.details import (
     ClosingPriceData,
     BestLimit,
 )
-
-
-class FetchMixin:
-    async def _fetch(self, url: str) -> Dict[str, Any]:
-        if self.session is None:
-            self.session = aiohttp.ClientSession()
-        headers = {
-            "Origin": "http://www.tsetmc.com",
-            "Pragma": "no-cache",
-            "Referer": "http://www.tsetmc.com/",
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36",
-        }
-
-        async with self.session.get(url, headers=headers) as resp:
-            if resp.status != 200:
-                raise Exception(f"Error fetching {url}: response code {resp.status}")
-            return await resp.json()
 
 
 class InstrumentDetailAPI(FetchMixin):
