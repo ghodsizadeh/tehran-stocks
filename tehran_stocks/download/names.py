@@ -3,6 +3,8 @@ import re
 import tehran_stocks.config as db
 from tehran_stocks.models import Stocks
 from .base import BASE_URL
+
+
 def get_stock_ids():
     url = f"{BASE_URL}/tsev2/data/MarketWatchPlus.aspx"
     r = requests.get(url)
@@ -56,10 +58,10 @@ def get_stock_detail(stock_id: str) -> Stocks:
             "instId": re.findall(r"InstrumentID='([\w\d]*)|$',", r.text)[0],
         }
     except IndexError:
-        return 
+        return
 
-    stock["insCode"] = (
-        stock_id if re.findall(r"InsCode='(\d*)',", r.text)[0] == stock_id else 0
+    stock["ins_code"] = (
+        stock_id if re.findall(r"ins_code='(\d*)',", r.text)[0] == stock_id else 0
     )
     stock["baseVol"] = float(re.findall(r"BaseVol=([\.\d]*),", r.text)[0])
     try:

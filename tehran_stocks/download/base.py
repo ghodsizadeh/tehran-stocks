@@ -10,6 +10,11 @@ CDN_URL = "http://cdn.tsetmc.com"
 
 
 class FetchMixin:
+    def __init__(self) -> None:
+        self.session = None
+        self.base_url = NEW_BASE_URL
+        self.cdn_url = CDN_URL
+
     async def _fetch(self, url: str) -> Dict[str, Any]:
         if self.session is None:
             self.session = aiohttp.ClientSession()

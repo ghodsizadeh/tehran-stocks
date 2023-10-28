@@ -94,10 +94,11 @@ class Stocks(Base):
         return self._mpl
 
     def update(self):
-        from tehran_stocks.download import update_stock_price
+        # from tehran_stocks.download import update_stock_price
 
         try:
-            return update_stock_price(self.code)
+            return False
+            # return update_stock_price(self.code)
         except:
             return False
 
@@ -119,9 +120,7 @@ class Stocks(Base):
         Returns:
             dict: { last_price, last_close, last_open, last_high, last_low, last_vol, trade_count, trade_value,market_cap}
         """
-        url = (
-            f"{BASE_URL}/tsev2/data/instinfodata.aspx?i={self.code}&c=27%20"
-        )
+        url = f"{BASE_URL}/tsev2/data/instinfodata.aspx?i={self.code}&c=27%20"
         headers = {
             "Connection": "keep-alive",
             "Accept": "text/plain, */*; q=0.01",

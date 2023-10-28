@@ -14,7 +14,7 @@ from datetime import datetime
 
 @pytest.fixture
 def api():
-    insCode = "48990026850202503"
+    insCode = 48990026850202503
 
     return InstrumentDetailAPI(insCode)
 

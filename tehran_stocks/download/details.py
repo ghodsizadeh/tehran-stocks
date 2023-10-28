@@ -23,25 +23,25 @@ class InstrumentDetailAPI(FetchMixin):
     A class for fetching details of a stock from the Tehran Stock Exchange (TSE) using its instrument code.
 
     Attributes:
-        inscode (str): The instrument code of the stock.
+        ins_code (str): The instrument code of the stock.
         session (aiohttp.ClientSession): The HTTP session used for making requests.
         base_url (str): The base URL for making requests to the TSE API.
         cdn_url (str): The URL for the TSE Content Delivery Network (CDN) API.
     """
 
-    def __init__(self, inscode: str):
-        self.inscode = inscode
+    def __init__(self, ins_code: str):
+        self.ins_code = ins_code
         self.session = None
         self.base_url = NEW_BASE_URL
         self.cdn_url = CDN_URL
 
     async def get_instrument_info(self) -> InstrumentInfo:
-        url = f"{self.cdn_url}/api/Instrument/GetInstrumentInfo/{self.inscode}"
+        url = f"{self.cdn_url}/api/Instrument/GetInstrumentInfo/{self.ins_code}"
         data = await self._fetch(url)
         return InstrumentInfo(**data["instrumentInfo"])
 
     async def get_codal(self) -> Dict[str, Any]:
-        url = f"{self.cdn_url}/api/Codal/GetPreparedDataByInsCode/9/{self.inscode}"
+        url = f"{self.cdn_url}/api/Codal/GetPreparedDataByins_code/9/{self.ins_code}"
         return await self._fetch(url)
 
     async def get_instrument_state_top(self) -> InstrumentState:
@@ -50,22 +50,22 @@ class InstrumentDetailAPI(FetchMixin):
         return InstrumentState(**data["instrumentState"][0])
 
     async def get_client_type(self) -> TradeClientType:
-        url = f"{self.cdn_url}/api/ClientType/GetClientType/{self.inscode}/1/0"
+        url = f"{self.cdn_url}/api/ClientType/GetClientType/{self.ins_code}/1/0"
         data = await self._fetch(url)
         return TradeClientType(**data["clientType"])
 
     async def get_trade(self) -> List[Trade]:
-        url = f"{self.cdn_url}/api/Trade/GetTrade/{self.inscode}"
+        url = f"{self.cdn_url}/api/Trade/GetTrade/{self.ins_code}"
         data = await self._fetch(url)
         return [Trade(**i) for i in data["trade"]]
 
     async def get_closing_price_info(self) -> ClosingPriceData:
-        url = f"{self.cdn_url}/api/ClosingPrice/GetClosingPriceInfo/{self.inscode}"
+        url = f"{self.cdn_url}/api/ClosingPrice/GetClosingPriceInfo/{self.ins_code}"
         data = await self._fetch(url)
         return ClosingPriceData(**data["closingPriceInfo"])
 
     async def get_best_limits(self, date: str | datetime | None = None) -> BestLimit:
-        url = f"{self.cdn_url}/api/BestLimits/{self.inscode}"
+        url = f"{self.cdn_url}/api/BestLimits/{self.ins_code}"
         data = await self._fetch(url)
         return BestLimit(**data["bestLimits"][0])
 
@@ -75,6 +75,6 @@ class InstrumentDetailAPI(FetchMixin):
     ) -> List[BestLimitHistory]:
         if isinstance(date, datetime):
             date = date.strftime("%Y%m%d")
-        url = f"{self.cdn_url}/api/BestLimits/{self.inscode}/{date}"
+        url = f"{self.cdn_url}/api/BestLimits/{self.ins_code}/{date}"
         data = await self._fetch(url)
         return [BestLimitHistory(**i) for i in data["bestLimitsHistory"]]
