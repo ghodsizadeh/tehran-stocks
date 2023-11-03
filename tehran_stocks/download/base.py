@@ -16,16 +16,18 @@ class FetchMixin:
         self.cdn_url = CDN_URL
 
     async def _fetch(self, url: str) -> Dict[str, Any]:
-        if self.session is None:
-            self.session = aiohttp.ClientSession()
-        headers = {
-            "Origin": "http://www.tsetmc.com",
-            "Pragma": "no-cache",
-            "Referer": "http://www.tsetmc.com/",
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36",
-        }
+        async with aiohttp.ClientSession() as session:
+            headers = {
+                "Origin": "http://www.tsetmc.com",
+                "Pragma": "no-cache",
+                "Referer": "http://www.tsetmc.com/",
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36",
+            }
 
-        async with self.session.get(url, headers=headers) as resp:
-            if resp.status != 200:
-                raise Exception(f"Error fetching {url}: response code {resp.status}")
-            return await resp.json()
+            async with session.get(url, headers=headers) as resp:
+                if resp.status != 200:
+                    raise Exception(
+                        f"Error fetching {url}: response code {resp.status}"
+                    )
+                resp = await resp.json()
+            return resp

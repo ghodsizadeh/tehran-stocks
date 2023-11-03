@@ -42,6 +42,7 @@ class InstrumentInfo(BaseModel):
     under_supervision: Optional[int] = Field(default=None, alias="underSupervision")
     c_val_mne: Optional[str] = Field(default=None, alias="cValMne")
     ins_code: Optional[str] = Field(default=None, alias="insCode")
+    full_name_en: Optional[str] = Field(default=None, alias="lVal18")
     full_name: Optional[str] = Field(default=None, alias="lVal30")
     name: Optional[str] = Field(default=None, alias="lVal18AFC")
     eps: Optional[Eps]
