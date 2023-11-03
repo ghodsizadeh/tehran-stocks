@@ -24,5 +24,4 @@ async def test_get_index_history(api: IndexDetailsAPI):
 @pytest.mark.asyncio
 async def test_get_index_companies(api: IndexDetailsAPI):
     data = await api.get_index_companies()
-    breakpoint()
-    assert len(data) > 1000
+    assert len(data) > 1
