@@ -29,5 +29,5 @@ class FetchMixin:
                     raise Exception(
                         f"Error fetching {url}: response code {resp.status}"
                     )
-                resp = await resp.json()
-            return resp
+                res: Dict[str, Any] = await resp.json()
+            return res

@@ -31,6 +31,9 @@ ipython = ">=7.31,<9.0"
 ipdb = "^0.13.9"
 pytest-asyncio = "^0.21.1"
 ruff = "^0.1.1"
+mypy = "^1.6.1"
+types-pyyaml = "^6.0.12.12"
+types-requests = "^2.31.0.10"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

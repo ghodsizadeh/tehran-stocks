@@ -1,3 +1,4 @@
+from typing import Optional
 import requests
 import re
 import tehran_stocks.config as db
@@ -22,18 +23,21 @@ def get_stock_groups():
 
 
 def create_or_update_stock_from_dict(stock_id, stock):
-    if exist := Stocks.query.filter_by(code=stock_id).first():
+    stock_obj = Stocks.query.filter_by(code=stock_id).first()
+    if stock_obj:
         print(f"stock with code {stock_id} exist")
-        exist.shareCount = stock["shareCount"]
-        exist.baseVol = stock["baseVol"]
-        exist.sectorPe = stock["sectorPe"]
-        exist.estimatedEps = stock["estimatedEps"]
+        stock_obj.shareCount = stock["shareCount"]
+        stock_obj.baseVol = stock["baseVol"]
+        stock_obj.sectorPe = stock["sectorPe"]
+        stock_obj.estimatedEps = stock["estimatedEps"]
     else:
+        stock_obj = Stocks(**stock)
         print(f"creating stock with code {stock_id}")
-        db.session.add(Stocks(**stock))
+        db.session.add(stock_obj)
+    return stock_obj
 
 
-def get_stock_detail(stock_id: str) -> Stocks:
+def get_stock_detail(stock_id: str) -> Optional[Stocks]:
     """
     Dowload stocks detail and save them to the database.
     better not use it alone.
@@ -58,7 +62,7 @@ def get_stock_detail(stock_id: str) -> Stocks:
             "instId": re.findall(r"InstrumentID='([\w\d]*)|$',", r.text)[0],
         }
     except IndexError:
-        return
+        return None
 
     stock["ins_code"] = (
         stock_id if re.findall(r"ins_code='(\d*)',", r.text)[0] == stock_id else 0
@@ -66,43 +70,43 @@ def get_stock_detail(stock_id: str) -> Stocks:
     stock["baseVol"] = float(re.findall(r"BaseVol=([\.\d]*),", r.text)[0])
     try:
         stock["name"] = re.findall(r"LVal18AFC='([\D]*)',", r.text)[0]
-    except:
-        return
+    except Exception:
+        return None
     try:
         stock["group_name"] = re.findall(r"LSecVal='([\D]*)',", r.text)[0]
-    except:
-        return
+    except Exception:
+        return None
     try:
         stock["title"] = re.findall(r"Title='([\D]*)',", r.text)[0]
-    except:
-        return
+    except Exception:
+        return None
     try:
         stock["sectorPe"] = float(re.findall(r"SectorPE='([\.\d]*)',", r.text)[0])
-    except:
+    except Exception:
         stock["sectorPe"] = None
     try:
         stock["shareCount"] = float(re.findall(r"ZTitad=([\.\d]*),", r.text)[0])
-    except:
+    except Exception:
         stock["shareCount"] = None
 
     try:
         stock["estimatedEps"] = float(
             re.findall(r"EstimatedEPS='([\.\d]*)',", r.text)[0]
         )
-    except:
+    except Exception:
         stock["estimatedEps"] = None
     stock["group_code"] = re.findall(r"CSecVal='([\w\d]*)|$',", r.text)[0]
     if stock["name"] == "',DEven='',LSecVal='',CgrValCot='',Flow='',InstrumentID='":
-        return False
+        return None
 
-    create_or_update_stock_from_dict(stock_id, stock)
+    stock_obj = create_or_update_stock_from_dict(stock_id, stock)
 
     try:
         db.session.commit()
-    except:
+    except Exception:
         print(f"stock with code {stock_id} exist")
         db.session.rollback()
-    return stock
+    return stock_obj
 
 
 def fill_stock_table():

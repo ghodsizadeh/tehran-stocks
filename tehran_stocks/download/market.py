@@ -35,38 +35,22 @@ class MarketAPI(FetchMixin):
         self.cdn_url = CDN_URL
         self.market = market
 
-    async def get_most_visited(self, market: MarketType = None) -> List[TradeTopItem]:
-        if market is None:
-            market = self.market
-        url = (
-            f"{self.cdn_url}/api/ClosingPrice/GetTradeTop/MostVisited/{market.value}/7"
-        )
+    async def get_most_visited(self) -> List[TradeTopItem]:
+        url = f"{self.cdn_url}/api/ClosingPrice/GetTradeTop/MostVisited/{self.market.value}/7"
         data = await self._fetch(url)
         return [TradeTopItem(**d) for d in data["tradeTop"]]
 
-    async def get_selected_indexes(
-        self, market: MarketType = None
-    ) -> List[SelectedIndexItem]:
-        if market is None:
-            market = self.market
-        url = (
-            f"{self.cdn_url}/api/Index/GetIndexB1LastAll/SelectedIndexes/{market.value}"
-        )
+    async def get_selected_indexes(self) -> List[SelectedIndexItem]:
+        url = f"{self.cdn_url}/api/Index/GetIndexB1LastAll/SelectedIndexes/{self.market.value}"
         data = await self._fetch(url)
         return [SelectedIndexItem(**d) for d in data["indexB1LastAll"]]
 
-    async def get_instrument_effect(
-        self, market: MarketType = None
-    ) -> List[InstrumentEffectItem]:
-        if market is None:
-            market = self.market
-        url = f"{self.cdn_url}/api/Index/GetInstEffect/0/{market.value}/7"
+    async def get_instrument_effect(self) -> List[InstrumentEffectItem]:
+        url = f"{self.cdn_url}/api/Index/GetInstEffect/0/{self.market.value}/7"
         data = await self._fetch(url)
         return [InstrumentEffectItem(**d) for d in data["instEffect"]]
 
-    async def get_market_overview(self, market: MarketType = None) -> MarketOverview:
-        if market is None:
-            market = self.market
-        url = f"{self.cdn_url}/api/MarketData/GetMarketOverview/{market.value}"
+    async def get_market_overview(self) -> MarketOverview:
+        url = f"{self.cdn_url}/api/MarketData/GetMarketOverview/{self.market.value}"
         data = await self._fetch(url)
         return MarketOverview(**data["marketOverview"])

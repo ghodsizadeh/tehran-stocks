@@ -11,3 +11,14 @@ repos:
   rev: v0.1.1
   hooks:
     - id: ruff-format
+
+-   repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        entry: mypy
+        language: python
+        types: [python]
+        args: ["--ignore-missing-imports", "--scripts-are-modules"]
+        require_serial: true
+           

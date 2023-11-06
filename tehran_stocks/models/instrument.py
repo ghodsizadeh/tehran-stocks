@@ -22,10 +22,11 @@ class Stocks(Base):
     baseVol = Column(Float)
     prices = relationship("StockPrice", backref="instrument", lazy="dynamic")
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self._cached = False
         self._dfcounter = 0
+        self._df: pd.DataFrame = pd.DataFrame()
 
     @property
     def df(self) -> pd.DataFrame:

@@ -13,21 +13,22 @@ HOME_PATH = str(Path.home())
 TSE_FOLDER = ".tse"
 CONFIG_PATH = f"{os.path.join(HOME_PATH, TSE_FOLDER)}/config.yml"
 
+
 def create_config():
     # create config.yml from config.deafult.yml
     if not os.path.exists(CONFIG_PATH):
-        with open(os.path.join(os.path.dirname(__file__), "config.default.yml"), "r") as f:
+        with open(
+            os.path.join(os.path.dirname(__file__), "config.default.yml"), "r"
+        ) as f:
             config = yaml.full_load(f)
-        with  contextlib.suppress(FileExistsError):
-                path = os.path.join(HOME_PATH, TSE_FOLDER)
-                os.mkdir(path)
-        with open(CONFIG_PATH, "w") as f:   
-
-
+        with contextlib.suppress(FileExistsError):
+            path = os.path.join(HOME_PATH, TSE_FOLDER)
+            os.mkdir(path)
+        with open(CONFIG_PATH, "w") as f:
             yaml.dump(config, f)
 
-create_config()    
 
+create_config()
 
 
 with open(CONFIG_PATH, "r") as f:

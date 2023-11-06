@@ -28,7 +28,6 @@ class InstrumentInfo(BaseModel):
     base_vol: Optional[int] = Field(default=None, alias="baseVol")
     cIsin: Optional[str]
     cgrValCot: Optional[str] = Field(default=None, alias="cgrValCot")
-    contract_size: Optional[int] = Field(default=None, alias="contractSize")
     min_week: Optional[float] = Field(default=None, alias="minWeek")
     max_week: Optional[float] = Field(default=None, alias="maxWeek")
     min_year: Optional[float] = Field(default=None, alias="minYear")
