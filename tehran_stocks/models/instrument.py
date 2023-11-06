@@ -1,8 +1,9 @@
-from tehran_stocks.config import *
+from tehran_stocks.config import Base, engine, session
 from sqlalchemy.orm import relationship
 import pandas as pd
 import requests
 from tehran_stocks.download.base import BASE_URL
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, BIGINT
 
 
 class Stocks(Base):
@@ -14,18 +15,17 @@ class Stocks(Base):
     group_name = Column(String)
     group_code = Column(Integer)
     instId = Column(String)
-    insCode = Column(String)
-    code = Column(String, unique=True)
+    insCode = Column(String, index=True)
     sectorPe = Column(Float)
     shareCount = Column(Float)
     estimatedEps = Column(Float)
     baseVol = Column(Float)
-    prices = relationship("StockPrice", backref="stock")
-    _cached = False
-    _dfcounter = 0
+    prices = relationship("StockPrice", backref="instrument", lazy="dynamic")
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self._cached = False
+        self._dfcounter = 0
 
     @property
     def df(self) -> pd.DataFrame:
@@ -99,7 +99,7 @@ class Stocks(Base):
         try:
             return False
             # return update_stock_price(self.code)
-        except:
+        except Exception:
             return False
 
     def summary(self):

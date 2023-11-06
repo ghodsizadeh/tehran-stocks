@@ -62,20 +62,6 @@ class InstrumentState(BaseModel):
     c_etaval_title: Optional[str] = Field(default=None, alias="cEtavalTitle")
 
 
-# {
-#     "clientType": {
-#         "buy_I_Volume": 117325549.0, # حقیقی
-#         "buy_N_Volume": 2400000.0, # حقوقی
-#         "buy_DDD_Volume": 0.0,
-#         "buy_CountI": 1367, # تعداد حقیقی
-#         "buy_CountN": 1,  # تعداد حقوقی
-#         "buy_CountDDD": 0,
-#         "sell_I_Volume": 99671572.0,
-#         "sell_N_Volume": 20053977.0,
-#         "sell_CountI": 1713,
-#         "sell_CountN": 12
-#     }
-# }
 class TradeClientType(BaseModel):
     buy_volume_individual: Optional[float] = Field(default=None, alias="buy_I_Volume")
     buy_volume_legal: Optional[float] = Field(default=None, alias="buy_N_Volume")
@@ -89,9 +75,6 @@ class TradeClientType(BaseModel):
     sell_volume_legal: Optional[float] = Field(default=None, alias="sell_N_Volume")
     sell_count_individual: Optional[int] = Field(default=None, alias="sell_CountI")
     sell_count_legal: Optional[int] = Field(default=None, alias="sell_CountN")
-
-
-# {"insCode":null,"dEven":0,"nTran":1,"hEven":90016,"qTitTran":71391,"pTran":4350.00,"qTitNgJ":0,"iSensVarP":"\u0000","pPhSeaCotJ":0.0,"pPbSeaCotJ":0.0,"iAnuTran":0,"xqVarPJDrPRf":0.0,"canceled":0},
 
 
 class Trade(BaseModel):
@@ -108,9 +91,6 @@ class Trade(BaseModel):
     i_anu_tran: Optional[int] = Field(default=None, alias="iAnuTran")
     xq_var_pjdr_prf: Optional[float] = Field(default=None, alias="xqVarPJDrPRf")
     canceled: Optional[int]
-
-
-# {"closingPriceInfo":{"instrumentState":{"idn":0,"dEven":0,"hEven":0,"insCode":null,"cEtaval":"A ","realHeven":0,"underSupervision":0,"cEtavalTitle":"مجاز"},"instrument":null,"lastHEven":103950,"finalLastDate":20231022,"nvt":0.0,"mop":0,"thirtyDayClosingHistory":null,"priceChange":0.0,"priceMin":4296.00,"priceMax":4429.00,"priceYesterday":4371.00,"priceFirst":4350.00,"last":false,"id":0,"insCode":"0","dEven":20231022,"hEven":103950,"pClosing":4378.00,"iClose":false,"yClose":false,"pDrCotVal":4360.00,"zTotTran":2509.0,"qTotTran5J":55169799.0,"qTotCap":241525532962.00}}
 
 
 class ClosingPriceData(BaseModel):

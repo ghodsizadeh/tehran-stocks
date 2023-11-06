@@ -1,5 +1,5 @@
 import tehran_stocks.config as db
-from .stocks import StockPrice, Stocks
+from .instrument import StockPrice, Stocks
 
 
 def create():

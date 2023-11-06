@@ -1,6 +1,5 @@
 from pydantic import BaseModel, Field
 from typing import Optional
-# {'insCode': 32097828799138957, 'dEven': 20081204, 'xNivInuClMresIbs': 9248.9, 'xNivInuPbMresIbs': 9233.2, 'xNivInuPhMresIbs': 9248.9}
 
 
 class IndexHistoryItem(BaseModel):

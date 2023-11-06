@@ -1,2 +1,9 @@
 from .create import create
-from .stocks import StockPrice, Stocks, get_asset
+from .instrument import StockPrice, Stocks, get_asset
+
+__all__ = [
+    "Stocks",
+    "StockPrice",
+    "get_asset",
+    "create",
+]
