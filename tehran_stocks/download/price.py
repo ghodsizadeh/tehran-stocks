@@ -8,7 +8,7 @@ import pandas as pd
 from jdatetime import date as jdate
 
 import tehran_stocks.config as db
-from tehran_stocks.models import Stocks
+from tehran_stocks.models import Instrument
 from tehran_stocks.schema.price import PriceAdjustItem
 
 from .base import BASE_URL, FetchMixin
@@ -100,7 +100,7 @@ def update_group(code):
 
     `Warning: Stock table should be updated`
     """
-    stocks = db.session.query(Stocks.code).filter_by(group_code=code).all()
+    stocks = db.session.query(Instrument.code).filter_by(group_code=code).all()
     print("updating group", code)
     loop = asyncio.get_event_loop()
     # tasks = [update_stock_price(stock[0]) for stock in stocks]
@@ -127,7 +127,7 @@ def update_group(code):
 
 
 def get_all_price():
-    codes = db.session.query(db.distinct(Stocks.group_code)).all()
+    codes = db.session.query(db.distinct(Instrument.group_code)).all()
     for i, code in enumerate(codes):
         print(
             f"                         total progress: {100*(i+1)/len(codes):.2f}%",

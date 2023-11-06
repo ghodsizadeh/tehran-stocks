@@ -4,6 +4,7 @@ from tehran_stocks.schema.details import (
     BestLimitHistory,
     InstrumentInfo,
     InstrumentState,
+    ShareHolderItem,
     Trade,
     TradeClientType,
     ClosingPriceData,
@@ -23,6 +24,7 @@ def api():
 @pytest.mark.asyncio
 async def test_get_details(api: InstrumentDetailAPI):
     data = await api.get_instrument_info()
+    breakpoint()
     assert data is not None
     assert isinstance(data, InstrumentInfo)
     assert data.ins_code == "48990026850202503"
@@ -82,3 +84,14 @@ async def test_get_best_limit_history(api):
     assert isinstance(data, list)
     assert len(data) > 0
     assert isinstance(data[0], BestLimitHistory)
+
+
+@pytest.mark.online
+@pytest.mark.asyncio
+async def test_get_share_holder(api):
+    date = "20231015"
+    data = await api.get_share_holder(date=date)
+    assert data is not None
+    assert isinstance(data, list)
+    assert len(data) > 0
+    assert isinstance(data[0], ShareHolderItem)

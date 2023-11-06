@@ -5,7 +5,7 @@
 # then use the dataclass to return data
 # everything is async, everything should handle errors
 from datetime import datetime
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from .base import NEW_BASE_URL, CDN_URL, FetchMixin
 from tehran_stocks.schema.details import (
     BestLimitHistory,
@@ -15,6 +15,7 @@ from tehran_stocks.schema.details import (
     Trade,
     ClosingPriceData,
     BestLimit,
+    ShareHolderItem,
 )
 
 
@@ -78,3 +79,15 @@ class InstrumentDetailAPI(FetchMixin):
         url = f"{self.cdn_url}/api/BestLimits/{self.ins_code}/{date}"
         data = await self._fetch(url)
         return [BestLimitHistory(**i) for i in data["bestLimitsHistory"]]
+
+    # https://cdn.tsetmc.com/api/Shareholder/48990026850202503/20231015
+    async def get_share_holder(
+        self, date: Optional[str | datetime]
+    ) -> List[ShareHolderItem]:
+        if date is None:
+            date = datetime.now().strftime("%Y%m%d")
+        elif isinstance(date, datetime):
+            date = date.strftime("%Y%m%d")
+        url = f"{self.cdn_url}/api/Shareholder/{self.ins_code}/{date}"
+        data = await self._fetch(url)
+        return [ShareHolderItem(**i) for i in data["shareShareholder"]]

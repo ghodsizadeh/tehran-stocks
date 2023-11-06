@@ -6,7 +6,7 @@ from tehran_stocks.download import (
     get_stock_ids,
     update_group,
 )
-from tehran_stocks.models import StockPrice, Stocks, get_asset
+from tehran_stocks.models import StockPrice, Instrument, get_asset
 
 from .initializer import init_db, fill_db
 
@@ -17,7 +17,7 @@ __all__ = [
     "get_all_price",
     "update_group",
     "StockPrice",
-    "Stocks",
+    "Instrument",
     "get_asset",
 ]
 

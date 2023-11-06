@@ -2,7 +2,7 @@ from typing import Optional
 import requests
 import re
 import tehran_stocks.config as db
-from tehran_stocks.models import Stocks
+from tehran_stocks.models import Instrument
 from .base import BASE_URL
 
 
@@ -23,7 +23,7 @@ def get_stock_groups():
 
 
 def create_or_update_stock_from_dict(stock_id, stock):
-    stock_obj = Stocks.query.filter_by(code=stock_id).first()
+    stock_obj = Instrument.query.filter_by(code=stock_id).first()
     if stock_obj:
         print(f"stock with code {stock_id} exist")
         stock_obj.shareCount = stock["shareCount"]
@@ -31,13 +31,13 @@ def create_or_update_stock_from_dict(stock_id, stock):
         stock_obj.sectorPe = stock["sectorPe"]
         stock_obj.estimatedEps = stock["estimatedEps"]
     else:
-        stock_obj = Stocks(**stock)
+        stock_obj = Instrument(**stock)
         print(f"creating stock with code {stock_id}")
         db.session.add(stock_obj)
     return stock_obj
 
 
-def get_stock_detail(stock_id: str) -> Optional[Stocks]:
+def get_stock_detail(stock_id: str) -> Optional[Instrument]:
     """
     Dowload stocks detail and save them to the database.
     better not use it alone.

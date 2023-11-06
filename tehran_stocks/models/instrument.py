@@ -1,22 +1,25 @@
-from tehran_stocks.config import Base, engine, session
+from typing import List, Optional
+from tehran_stocks.config import Base, session
 from sqlalchemy.orm import relationship
 import pandas as pd
 import requests
 from tehran_stocks.download.base import BASE_URL
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, BIGINT
+from tehran_stocks.download.details import InstrumentDetailAPI
+from tehran_stocks.schema.details import ShareHolderItem
 
 
-class Stocks(Base):
+class Instrument(Base):
     __tablename__ = "stocks"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String)
-    title = Column(String)
-    group_name = Column(String)
-    group_code = Column(Integer)
-    instId = Column(String)
-    insCode = Column(String, index=True)
-    sectorPe = Column(Float)
+    name = Column(String, index=True)
+    full_name = Column(String, index=True)
+    full_name_en = Column(String)
+    sector_name = Column(String)
+    sector_code = Column(Integer, index=True)
+    ins_id = Column(String)
+    ins_code = Column(String, index=True)
     shareCount = Column(Float)
     estimatedEps = Column(Float)
     baseVol = Column(Float)
@@ -24,31 +27,20 @@ class Stocks(Base):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
+        self.details = InstrumentDetailAPI(self.ins_code)
+        self.market_api = True
         self._cached = False
         self._dfcounter = 0
         self._df: pd.DataFrame = pd.DataFrame()
 
+    def share_holders(self, date: Optional[str] = None) -> List[ShareHolderItem]:
+        return self.details.get_share_holder(date)
+
     @property
     def df(self) -> pd.DataFrame:
         """dataframe of stock price with date and OHLC"""
-        self._dfcounter += 1
-        if self._cached:
-            return self._df
-        query = f"select * from stock_price where code = '{self.code}'"
-        df = pd.read_sql(query, engine)
-        if df.empty:
-            self._cached = True
-            self._df = df
-            return self._df
-        df["date"] = pd.to_datetime(df["dtyyyymmdd"], format="%Y%m%d")
-        df["jdate"] = df.date.jalali.to_jalali()
-        df = df.sort_values("date")
-        df.reset_index(drop=True, inplace=True)
-        df.set_index("date", inplace=True)
-        self._cached = True
-        self._df = df
 
-        return self._df
+        return pd.DataFrame()
 
     def get_dividend(self) -> pd.DataFrame:
         """get changes in price for dividend and changes in share
@@ -174,8 +166,8 @@ class Stocks(Base):
     @staticmethod
     def get_group():
         return (
-            session.query(Stocks.group_code, Stocks.group_name)
-            .group_by(Stocks.group_code)
+            session.query(Instrument.group_code, Instrument.group_name)
+            .group_by(Instrument.group_code)
             .all()
         )
 
@@ -205,4 +197,4 @@ class StockPrice(Base):
 
 def get_asset(name):
     name = name.replace("ی", "ي").replace("ک", "ك")
-    return Stocks.query.filter_by(name=name).first()
+    return Instrument.query.filter_by(name=name).first()

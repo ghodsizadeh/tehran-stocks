@@ -1,7 +1,7 @@
 import tehran_stocks.config as db
-from .instrument import StockPrice, Stocks
+from .instrument import StockPrice, Instrument
 
 
 def create():
-    Stocks.__table__.create(db.engine)
+    Instrument.__table__.create(db.engine)
     StockPrice.__table__.create(db.engine)

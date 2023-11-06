@@ -26,8 +26,8 @@ class StaticThreshold(BaseModel):
 
 class InstrumentInfo(BaseModel):
     base_vol: Optional[int] = Field(default=None, alias="baseVol")
-    cIsin: Optional[str]
-    cgrValCot: Optional[str] = Field(default=None, alias="cgrValCot")
+    company_id: Optional[str] = Field(default=None, alias="cIsin")
+    ins_id: Optional[str] = Field(default=None, alias="instrumentID")
     min_week: Optional[float] = Field(default=None, alias="minWeek")
     max_week: Optional[float] = Field(default=None, alias="maxWeek")
     min_year: Optional[float] = Field(default=None, alias="minYear")
@@ -44,6 +44,10 @@ class InstrumentInfo(BaseModel):
     full_name_en: Optional[str] = Field(default=None, alias="lVal18")
     full_name: Optional[str] = Field(default=None, alias="lVal30")
     name: Optional[str] = Field(default=None, alias="lVal18AFC")
+    market_type: Optional[int] = Field(default=None, alias="flow")
+    market_title: Optional[str] = Field(default=None, alias="flowTitle")
+    market_long_title: Optional[str] = Field(default=None, alias="cgrValCot")
+    share_count: Optional[int] = Field(default=None, alias="zTitad")
     eps: Optional[Eps]
     sector: Optional[Sector]
 
@@ -145,3 +149,17 @@ class BestLimitHistory(BaseModel):
     count_sell: Optional[int] = Field(default=None, alias="zOrdMeOf")
     volume_sell: Optional[int] = Field(default=None, alias="qTitMeOf")
     ins_code: Optional[str] = Field(default=None, alias="insCode")
+
+
+class ShareHolderItem(BaseModel):
+    share_holder_id: Optional[int] = Field(default=None, alias="shareHolderID")
+    share_holder_name: Optional[str] = Field(default=None, alias="shareHolderName")
+    company_id: Optional[str] = Field(default=None, alias="cIsin")
+    d_even: Optional[int] = Field(default=None, alias="dEven")
+    number_of_shares: Optional[float] = Field(default=None, alias="numberOfShares")
+    per_of_shares: Optional[float] = Field(default=None, alias="perOfShares")
+    change: Optional[int] = Field(default=None, alias="change")
+    change_amount: Optional[float] = Field(default=None, alias="changeAmount")
+    share_holder_share_id: Optional[int] = Field(
+        default=None, alias="shareHolderShareID"
+    )
