@@ -6,9 +6,12 @@ from tehran_stocks.download import (
     get_stock_ids,
     update_group,
 )
-from tehran_stocks.models import StockPrice, Instrument, get_asset
+from tehran_stocks.models import InstrumenPrice, Instrument
 
-from .initializer import init_db, fill_db
+from .initializer import init_db
+from tehran_stocks.config.engine import create_engine_with_config
+from sqlalchemy.orm import sessionmaker
+
 
 __all__ = [
     "get_stock_detail",
@@ -16,9 +19,9 @@ __all__ = [
     "get_stock_ids",
     "get_all_price",
     "update_group",
-    "StockPrice",
     "Instrument",
-    "get_asset",
+    "InstrumenPrice",
+    "init_db",
 ]
 
 
@@ -26,11 +29,17 @@ def db_is_empty():
     try:
         db.session.execute("select * from stocks limit 1;")
         return False
-    except:
+    except Exception:
         return True
 
 
 if db_is_empty():
     print("No database founded.")
-    init_db()
-    fill_db()
+    # init_db()
+    # fill_db()
+
+if __name__ == "__main__":
+    engine = create_engine_with_config()
+    engine = None
+    Session = sessionmaker(bind=engine)
+    session = Session()

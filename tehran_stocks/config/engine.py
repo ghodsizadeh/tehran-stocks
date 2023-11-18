@@ -1,66 +1,37 @@
-import contextlib
+import logging
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import *
-from pathlib import Path
-import os
-import logging
-import yaml
+from .config_file import (
+    create_config,
+    HOME_PATH,
+    TSE_FOLDER,
+    create_tse_folder,
+    get_database_config,
+)
 
 
-HOME_PATH = str(Path.home())
-TSE_FOLDER = ".tse"
-CONFIG_PATH = f"{os.path.join(HOME_PATH, TSE_FOLDER)}/config.yml"
+def create_engine_uri(database_config):
+    """Create the database URI from the configuration"""
+    engine = database_config.get("engine", "sqlite")
+    if engine == "sqlite":
+        path = database_config.get("path", f"{HOME_PATH}/{TSE_FOLDER}/stocks.db")
+        return f"sqlite:///{path}"
+    host = database_config.get("host", "localhost")
+    port = database_config.get("port", "5432")
+    database = database_config.get("database", "stocks")
+    user = database_config.get("user", "tse")
+    password = database_config.get("password", "tse")
+    return f"{engine}://{user}:{password}@{host}:{port}/{database}"
 
 
-def create_config():
-    # create config.yml from config.deafult.yml
-    if not os.path.exists(CONFIG_PATH):
-        with open(
-            os.path.join(os.path.dirname(__file__), "config.default.yml"), "r"
-        ) as f:
-            config = yaml.full_load(f)
-        with contextlib.suppress(FileExistsError):
-            path = os.path.join(HOME_PATH, TSE_FOLDER)
-            os.mkdir(path)
-        with open(CONFIG_PATH, "w") as f:
-            yaml.dump(config, f)
-
-
-create_config()
-
-
-with open(CONFIG_PATH, "r") as f:
-    config = yaml.full_load(f)
-
-defualt_db_path = os.path.join(f"{HOME_PATH}/{TSE_FOLDER}/stocks.db")
-
-db_path = config.get("database").get("path")
-if db_path is None:
-    db_path = defualt_db_path
-
-default_engine_URI = f"sqlite:///{db_path}"
-engine = config.get("database").get("engine")
-if engine == "sqlite":
-    engine_URI = default_engine_URI
-else:
-    engine = config.get("database").get("engine")
-    host = config.get("database").get("host")
-    port = config.get("database").get("port")
-    database = config.get("database").get("database")
-    user = config.get("database").get("user")
-    password = config.get("database").get("password")
-    engine_URI = f"{engine}://{user}:{password}@{host}:{port}/{database}"
-
-
-logging.info(engine_URI)
-engine = create_engine(engine_URI)
-
-
-Session = sessionmaker()
-Session.configure(bind=engine)
-session = Session()
+def create_engine_with_config():
+    create_tse_folder()
+    create_config()
+    database_config = get_database_config()
+    engine_uri = create_engine_uri(database_config)
+    logging.info(engine_uri)
+    engine = create_engine(engine_uri)
+    return engine
 
 
 class ClassProperty(object):
@@ -74,16 +45,29 @@ class ClassProperty(object):
         return None
 
 
+engine = create_engine_with_config()
+
+
+def get_session(engine):
+    from sqlalchemy.orm import sessionmaker
+
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    return session
+
+
 class QueryMixin:
     @ClassProperty
     def query(cls):
+        session = get_session(engine)
+
         return session.query(cls)
 
     def display(self):
         data = self.__dict__
         try:
             del data["_sa_instance_state"]
-        except:
+        except AttributeError:
             pass
         return data
 

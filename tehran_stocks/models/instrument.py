@@ -5,7 +5,9 @@ import requests
 from sqlalchemy import Column, Float, Integer, String
 from sqlalchemy.orm import relationship
 
-from tehran_stocks.config import Base, session
+from tehran_stocks.config import Base
+from tehran_stocks.config import engine
+from tehran_stocks.config.engine import get_session
 from tehran_stocks.download.base import BASE_URL
 from tehran_stocks.download.details import InstrumentDetailAPI
 from tehran_stocks.schema.details import InstrumentInfo, ShareHolderItem
@@ -25,7 +27,7 @@ class Instrument(Base):
     shareCount = Column(Float)
     estimatedEps = Column(Float)
     baseVol = Column(Float)
-    prices = relationship("StockPrice", backref="instrument", lazy="dynamic")
+    prices = relationship("InstrumentPrice", backref="instrument", lazy="dynamic")
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -125,6 +127,7 @@ class Instrument(Base):
 
     @staticmethod
     def get_group():
+        session = get_session(engine)
         return (
             session.query(Instrument.group_code, Instrument.group_name)
             .group_by(Instrument.group_code)
