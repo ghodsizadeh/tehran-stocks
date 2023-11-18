@@ -14,9 +14,9 @@ repos:
 
 -   repo: local
     hooks:
-      - id: mypy
+      - id: pr-mypy
         name: mypy
-        entry: mypy
+        entry: poetry run mypy
         language: python
         types: [python]
         args: ["--ignore-missing-imports", "--scripts-are-modules"]
