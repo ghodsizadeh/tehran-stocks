@@ -22,16 +22,21 @@ def create_tse_folder() -> bool:
 def create_config():
     # Create config.yml from config.default.yml
     if not os.path.exists(CONFIG_PATH):
+        print("creating ~/.tse/config.yml")
         with open(
             os.path.join(os.path.dirname(__file__), "config.default.yml"), "r"
         ) as f:
             config = yaml.full_load(f)
         with open(CONFIG_PATH, "w") as f:
             yaml.dump(config, f)
+        print("config.yml created")
 
 
 def get_database_config() -> Dict[str, Optional[str]]:
     # Get the database configuration from the config file
     with open(CONFIG_PATH, "r") as f:
         config = yaml.full_load(f)
+        if config is None:
+            os.remove(CONFIG_PATH)
+            print("config.yml was empty, please try again")
         return config.get("database", {})

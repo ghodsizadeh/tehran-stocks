@@ -1,9 +1,9 @@
 from .create import create_database
 from .instrument import Instrument
-from .instrument_price import InstrumenPrice
+from .instrument_price import InstrumentPrice
 
 __all__ = [
     "Instrument",
-    "InstrumenPrice",
+    "InstrumentPrice",
     "create_database",
 ]

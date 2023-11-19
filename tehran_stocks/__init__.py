@@ -6,11 +6,9 @@ from tehran_stocks.download import (
     get_stock_ids,
     update_group,
 )
-from tehran_stocks.models import InstrumenPrice, Instrument
+from tehran_stocks.models import InstrumentPrice, Instrument
 
-from .initializer import init_db
-from tehran_stocks.config.engine import create_engine_with_config
-from sqlalchemy.orm import sessionmaker
+# from .initializer import init_db
 
 
 __all__ = [
@@ -20,7 +18,7 @@ __all__ = [
     "get_all_price",
     "update_group",
     "Instrument",
-    "InstrumenPrice",
+    "InstrumentPrice",
     "init_db",
 ]
 
@@ -32,14 +30,12 @@ def db_is_empty():
     except Exception:
         return True
 
-
-if db_is_empty():
-    print("No database founded.")
     # init_db()
     # fill_db()
 
-if __name__ == "__main__":
-    engine = create_engine_with_config()
-    engine = None
-    Session = sessionmaker(bind=engine)
-    session = Session()
+
+# if __name__ == "__main__":
+#     engine = create_engine_with_config()
+#     engine = None
+#     Session = sessionmaker(bind=engine)
+#     session = Session()

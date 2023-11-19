@@ -10,6 +10,8 @@ from tehran_stocks.config.config_file import (
 from tehran_stocks.config.engine import create_engine_uri
 import yaml
 
+# path os.remove
+
 
 def test_create_engine_uri_sqlite():
     database_config = {"engine": "sqlite", "path": "/path/to/database.db"}
@@ -32,7 +34,7 @@ def test_create_engine_uri_postgres():
 
 def test_create_engine_uri_sqlite_default_path():
     database_config = {"engine": "sqlite"}
-    expected_uri = f"sqlite:///{HOME_PATH}/{TSE_FOLDER}/stocks.db"
+    expected_uri = f"sqlite:///{HOME_PATH}/{TSE_FOLDER}/tse_data.db"
     assert create_engine_uri(database_config) == expected_uri
 
 
@@ -44,7 +46,7 @@ def test_create_engine_uri_no_engine():
         "user": "test_user",
         "password": "test_password",
     }
-    expected_uri = f"sqlite:///{HOME_PATH}/{TSE_FOLDER}/stocks.db"
+    expected_uri = f"sqlite:///{HOME_PATH}/{TSE_FOLDER}/test_db.db"
     assert create_engine_uri(database_config) == expected_uri
 
 

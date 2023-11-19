@@ -3,11 +3,11 @@ from sqlalchemy import BIGINT, Column, Float, ForeignKey, Integer, String
 from tehran_stocks.config import Base
 
 
-class InstrumenPrice(Base):
+class InstrumentPrice(Base):
     __tablename__ = "instrument_price"
 
     id = Column(Integer, primary_key=True)
-    code = Column(String, ForeignKey("instruments.code"), index=True)
+    ins_code = Column(String, ForeignKey("instruments.ins_code"), index=True)
     ticker = Column(String)
     date = Column("dtyyyymmdd", Integer, index=True)
     date_shamsi = Column(String)

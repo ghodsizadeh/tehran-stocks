@@ -4,4 +4,4 @@ database:
   port: None
   user: None
   password: None
-  database: None
+  database: tse_data

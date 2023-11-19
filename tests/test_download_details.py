@@ -24,7 +24,6 @@ def api():
 @pytest.mark.asyncio
 async def test_get_details(api: InstrumentDetailAPI):
     data = await api.get_instrument_info()
-    breakpoint()
     assert data is not None
     assert isinstance(data, InstrumentInfo)
     assert data.ins_code == "48990026850202503"
