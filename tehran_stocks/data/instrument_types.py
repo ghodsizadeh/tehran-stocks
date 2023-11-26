@@ -3,22 +3,23 @@ from enum import Enum, unique
 
 @unique
 class InstrumentType(Enum):
-    Small_Company_in_Farabourse = "O5"
-    Put_Option = "OF"
-    Farabourse_Stocks = "O3"
-    Fund = "T1"
-    Commodity_Forward = "BK"
-    Murabaha_Sukuk = "B3"
+    Stock_Exchange_Stocks = "O1"  # O1
+    Farabourse_Stocks = "O3"  # O3
+    Futures = "O4"  # O4
+    Small_Company_in_Farabourse = "O5"  # O5
+    Mortgage_Securities = "O6"  # O6
+    Base_Market_Stocks = "O7"  # O7
+    Call_Option = "OA"  # OA
+    Put_Option = "OF"  # OF
+    Subordinate_Put_Option = "S4"  # S4
     Commodities = "K1"  # Gold Coin, Saffron, Pistachio, Rice
-    Mortgage_Securities = "O6"
-    Participation_Bonds = "B5"
-    Base_Market_Stocks = "O7"
-    Call_Option = "OA"
-    Right_of_Preemption = "R5"
-    Farabourse_Fund = "T3"
-    GAM_Sukuk = "B7"
-    Subordinate_Put_Option = "S4"
-    Stock_Exchange_Stocks = "O1"
-    Governmental_Murabaha = "B4"
-    Futures = "O4"
-    Leasing_Sukuk = "B6"
+    Unknown = "K2"  # Original: ???
+    Fund = "T1"  # T1
+    Farabourse_Fund = "T3"  # T3
+    Commodity_Forward = "BK"  # BK
+    Murabaha_Sukuk = "B3"  # B3
+    Participation_Bonds = "B5"  # B5
+    Governmental_Murabaha = "B4"  # B4
+    Leasing_Sukuk = "B6"  # B6
+    GAM_Sukuk = "B7"  # B7
+    Right_of_Preemption = "R5"  # R5
