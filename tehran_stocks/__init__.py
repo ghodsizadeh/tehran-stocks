@@ -3,7 +3,6 @@ from tehran_stocks.download import (
     get_all_price,
     get_stock_detail,
     get_stock_groups,
-    get_stock_ids,
     update_group,
 )
 from tehran_stocks.models import InstrumentPrice, Instrument
@@ -14,12 +13,10 @@ from tehran_stocks.models import InstrumentPrice, Instrument
 __all__ = [
     "get_stock_detail",
     "get_stock_groups",
-    "get_stock_ids",
     "get_all_price",
     "update_group",
     "Instrument",
     "InstrumentPrice",
-    "init_db",
 ]
 
 

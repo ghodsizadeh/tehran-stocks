@@ -27,6 +27,7 @@ class Instrument(Base):
     shareCount = Column(Float)
     estimatedEps = Column(Float)
     baseVol = Column(Float)
+    type = Column(String, index=True)  # like stock, etf, fund, index
     prices = relationship("InstrumentPrice", backref="instrument", lazy="dynamic")
 
     def __init__(self, **kwargs) -> None:

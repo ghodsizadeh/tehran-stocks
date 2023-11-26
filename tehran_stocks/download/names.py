@@ -1,16 +1,22 @@
 from typing import Optional
-import requests
 import re
-import tehran_stocks.config as db
 from tehran_stocks.models import Instrument
-from .base import BASE_URL
+from .base import BASE_URL, FetchMixin
+from csv import reader
+
+import requests
 
 
-def get_stock_ids():
-    url = f"{BASE_URL}/tsev2/data/MarketWatchPlus.aspx"
-    r = requests.get(url)
-    ids = set(re.findall(r"\d{15,20}", r.text))
-    return list(ids)
+class InstrumentList(FetchMixin):
+    async def get_ins_codes(self) -> list[tuple[int, str]]:
+        url = f"{self.old_base_url}/tsev2/data/MarketWatchPlus.aspx"
+        res = await self._fetch_raw(url)
+        # '164726,1186086,579439@@40456523152045946,IRO9AGAH0371,ضترو1100,اختيارخ ص آگاه-7500-02/11/15,61031,0,3750,3750,0,0,0,0,0,3750,,1,2079,3,68,500000.00,1.00,1000,311,,5;68267250263823360,IRO9AGAH0381,ضترو'
+        data = reader(res.split("@@")[-1].split(";"), delimiter=",")
+        ids = []
+        for row in data:
+            ids.append((int(row[0]), row[1]))
+        return ids
 
 
 def get_stock_groups():
@@ -33,7 +39,7 @@ def create_or_update_stock_from_dict(stock_id, stock):
     else:
         stock_obj = Instrument(**stock)
         print(f"creating stock with code {stock_id}")
-        db.session.add(stock_obj)
+        # db.session.add(stock_obj)
     return stock_obj
 
 
@@ -101,11 +107,11 @@ def get_stock_detail(stock_id: str) -> Optional[Instrument]:
 
     stock_obj = create_or_update_stock_from_dict(stock_id, stock)
 
-    try:
-        db.session.commit()
-    except Exception:
-        print(f"stock with code {stock_id} exist")
-        db.session.rollback()
+    # try:
+    #     db.session.commit()
+    # except Exception:
+    #     print(f"stock with code {stock_id} exist")
+    #     db.session.rollback()
     return stock_obj
 
 
@@ -118,6 +124,7 @@ def fill_stock_table():
     4- save them to database
     5- guides you to use the package
     """
+    pass
     # URL = "https://ts-api.ir/api/stocks"
     # try:
     #     print("try Downloading stock table from the package api... ")
@@ -140,17 +147,17 @@ def fill_stock_table():
     # except Exception as e:
     #     print(e)
     #     pass
-    print("Downloading group ids...")
-    stocks = get_stock_ids()
-    for i, stock in enumerate(stocks):
-        get_stock_detail(stock)
-        print(
-            f"downloading stocks details, changes: {(i+1)/len(stocks)*100:.1f}% completed",
-            end="\r",
-        )
+    # print("Downloading group ids...")
+    # # stocks = get_stock_ids()
+    # for i, stock in enumerate(stocks):
+    #     get_stock_detail(stock)
+    #     print(
+    #         f"downloading stocks details, changes: {(i+1)/len(stocks)*100:.1f}% completed",
+    #         end="\r",
+    #     )
 
-    print("Add all groups, you can download stock price by following codes")
-    print("from tehran_stocks import downloader")
-    print(" downloader.download_all() # for downloading all data")
-    print("downloader.download_group(group_id) # to download specefic group data")
-    print("downloader.download_stock(stock) to downloand stock specefic")
+    # print("Add all groups, you can download stock price by following codes")
+    # print("from tehran_stocks import downloader")
+    # print(" downloader.download_all() # for downloading all data")
+    # print("downloader.download_group(group_id) # to download specefic group data")
+    # print("downloader.download_stock(stock) to downloand stock specefic")

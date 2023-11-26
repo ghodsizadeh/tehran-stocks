@@ -1,14 +1,17 @@
 import pytest
 from tehran_stocks import download
+from tehran_stocks.download.names import InstrumentList
 
-SAIPA = "44891482026867833"
+SAIPA = 44891482026867833
 
 
 @pytest.mark.online
-def test_id_from_group():
-    ids = download.get_stock_ids()
-    assert ids, "no id available"
-    assert SAIPA in ids, "Saipa is not in group"
+@pytest.mark.asyncio
+async def test_get_ins_codes():
+    res = await InstrumentList().get_ins_codes()
+    assert res, "no data available"
+    assert (SAIPA, "IRO1SIPA0001") in res, "Saipa is not in group"
+    assert len(res) > 300, "there is a problem during downloading stocks"
 
 
 @pytest.mark.online

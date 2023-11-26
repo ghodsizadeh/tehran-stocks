@@ -31,6 +31,7 @@ class InstrumentDetailAPI(FetchMixin):
     """
 
     def __init__(self, ins_code: str):
+        super().__init__()
         self.ins_code = ins_code
         self.session = None
         self.base_url = NEW_BASE_URL
