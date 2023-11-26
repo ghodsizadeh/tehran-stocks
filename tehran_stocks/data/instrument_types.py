@@ -23,3 +23,18 @@ class InstrumentType(Enum):
     Leasing_Sukuk = "B6"  # B6
     GAM_Sukuk = "B7"  # B7
     Right_of_Preemption = "R5"  # R5
+
+
+# all O* and all T*
+basic_instrument_types = [
+    InstrumentType.Stock_Exchange_Stocks.value,
+    InstrumentType.Farabourse_Stocks.value,
+    InstrumentType.Futures.value,
+    InstrumentType.Small_Company_in_Farabourse.value,
+    InstrumentType.Base_Market_Stocks.value,
+    InstrumentType.Call_Option.value,
+    InstrumentType.Put_Option.value,
+    InstrumentType.Commodities.value,
+    InstrumentType.Fund.value,
+    InstrumentType.Farabourse_Fund.value,
+]

@@ -8,9 +8,10 @@ import requests
 
 
 class InstrumentList(FetchMixin):
-    async def get_ins_codes(self) -> list[tuple[int, str]]:
-        url = f"{self.old_base_url}/tsev2/data/MarketWatchPlus.aspx"
-        res = await self._fetch_raw(url)
+    @classmethod
+    async def get_ins_codes(cls) -> list[tuple[int, str]]:
+        url = f"{cls.old_base_url}/tsev2/data/MarketWatchPlus.aspx"
+        res = await cls._fetch_raw(url)
         # '164726,1186086,579439@@40456523152045946,IRO9AGAH0371,ضترو1100,اختيارخ ص آگاه-7500-02/11/15,61031,0,3750,3750,0,0,0,0,0,3750,,1,2079,3,68,500000.00,1.00,1000,311,,5;68267250263823360,IRO9AGAH0381,ضترو'
         data = reader(res.split("@@")[-1].split(";"), delimiter=",")
         ids = []

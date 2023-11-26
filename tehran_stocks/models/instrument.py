@@ -8,6 +8,7 @@ from sqlalchemy.orm import relationship
 from tehran_stocks.config import Base
 from tehran_stocks.config import engine
 from tehran_stocks.config.engine import get_session
+from tehran_stocks.data.instrument_types import InstrumentType
 from tehran_stocks.download.base import BASE_URL
 from tehran_stocks.download.details import InstrumentDetailAPI
 from tehran_stocks.schema.details import InstrumentInfo, ShareHolderItem
@@ -29,6 +30,26 @@ class Instrument(Base):
     baseVol = Column(Float)
     type = Column(String, index=True)  # like stock, etf, fund, index
     prices = relationship("InstrumentPrice", backref="instrument", lazy="dynamic")
+
+    @classmethod
+    def from_dict(
+        cls,
+        data: InstrumentInfo,
+        type: str = InstrumentType.Stock_Exchange_Stocks.value,
+    ):
+        return cls(
+            name=data.name,
+            full_name=data.full_name,
+            full_name_en=data.full_name_en,
+            sector_name=data.sector and data.sector.sector_name,
+            sector_code=data.sector and data.sector.sector_code,
+            ins_id=data.ins_id,
+            ins_code=data.ins_code,
+            shareCount=data.share_count,
+            estimatedEps=data.eps and data.eps.estimated_eps,
+            baseVol=data.base_vol,
+            type=type,
+        )
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
