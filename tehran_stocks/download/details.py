@@ -30,7 +30,7 @@ class InstrumentDetailAPI(FetchMixin):
         cdn_url (str): The URL for the TSE Content Delivery Network (CDN) API.
     """
 
-    def __init__(self, ins_code: str):
+    def __init__(self, ins_code: int | str):
         super().__init__()
         self.ins_code = ins_code
         self.session = None

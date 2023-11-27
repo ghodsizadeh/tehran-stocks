@@ -22,15 +22,18 @@ class FetchMixin:
     }
 
     @classmethod
-    async def _fetch_raw(cls, url: str) -> str:
+    async def _fetch_raw(cls, url: str, retries: int = 3) -> str:
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=cls.headers) as resp:
                 if resp.status != 200:
+                    retries -= 1
+                    if retries > 0:
+                        return await cls._fetch_raw(url, retries)
                     raise Exception(
                         f"Error fetching {url}: response code {resp.status}"
                     )
                 res: str = await resp.text()
-                return res
+            return res
 
     @classmethod
     async def _fetch(cls, url: str, retries: int = 3) -> Dict[str, Any]:

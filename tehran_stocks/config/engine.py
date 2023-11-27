@@ -42,9 +42,11 @@ class ClassProperty(object):
         return None
 
 
-def get_session(engine):
+def get_session(engine=None):
     from sqlalchemy.orm import sessionmaker
 
+    if engine is None:
+        engine = get_engine_from_config()
     session_maker = sessionmaker(bind=engine)
     session = session_maker()
     return session

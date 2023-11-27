@@ -1,9 +1,7 @@
 import tehran_stocks.config as db
 from tehran_stocks.download import (
-    get_all_price,
     get_stock_detail,
     get_stock_groups,
-    update_group,
 )
 from tehran_stocks.models import InstrumentPrice, Instrument
 

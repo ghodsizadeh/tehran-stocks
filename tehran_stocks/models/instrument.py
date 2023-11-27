@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING
 
 import pandas as pd
 import requests
@@ -12,6 +12,10 @@ from tehran_stocks.data.instrument_types import InstrumentType
 from tehran_stocks.download.base import BASE_URL
 from tehran_stocks.download.details import InstrumentDetailAPI
 from tehran_stocks.schema.details import InstrumentInfo, ShareHolderItem
+from tehran_stocks.download.price import InstrumentPriceHistory
+
+if TYPE_CHECKING:
+    pass
 
 
 class Instrument(Base):
@@ -23,8 +27,8 @@ class Instrument(Base):
     full_name_en = Column(String)
     sector_name = Column(String)
     sector_code = Column(Integer, index=True)
-    ins_id = Column(String)
-    ins_code = Column(String, index=True)
+    ins_id = Column(String, unique=True)
+    ins_code = Column(String, index=True, unique=True)
     shareCount = Column(Float)
     estimatedEps = Column(Float)
     baseVol = Column(Float)
@@ -67,6 +71,33 @@ class Instrument(Base):
         """dataframe of stock price with date and OHLC"""
 
         return pd.DataFrame()
+
+    async def _get_update_price(self, save: bool = True) -> pd.DataFrame:
+        from tehran_stocks.models.instrument_price import InstrumentPrice
+
+        api = InstrumentPriceHistory(self.ins_code)
+        session = get_session()
+        # last_exist_date = (
+        #     self.prices.order_by(InstrumentPrice.date.desc())
+        #     .first()
+        #     .date
+        #     .strftime("%Y%m%d")
+        # )
+        last_price = (
+            session.query(InstrumentPrice)
+            .filter(InstrumentPrice.ins_code == self.ins_code)
+            .order_by(InstrumentPrice.date.desc())
+            .first()
+        )
+        if last_price:
+            last_exist_date = f"{last_price.date}"
+        else:
+            last_exist_date = None
+        data = await api.get_stock_price_history(start_date=last_exist_date)
+        data["ins_code"] = self.ins_code
+        if save:
+            data.to_sql("instrument_price", engine, if_exists="append", index=False)
+        return data
 
     def get_dividend(self) -> pd.DataFrame:
         """get changes in price for dividend and changes in share
@@ -111,15 +142,6 @@ class Instrument(Base):
             }
         )
         return self._mpl
-
-    def update(self):
-        # from tehran_stocks.download import update_stock_price
-
-        try:
-            return False
-            # return update_stock_price(self.code)
-        except Exception:
-            return False
 
     def summary(self):
         """summart of stock"""
