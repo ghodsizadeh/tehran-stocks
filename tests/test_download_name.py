@@ -1,42 +1,24 @@
 import pytest
 from tehran_stocks import download
+from tehran_stocks.download.names import InstrumentList
 
-SAIPA = "44891482026867833"
-
-
-def test_id_from_group():
-    ids = download.get_stock_ids()
-    assert ids, "no id available"
-    assert SAIPA in ids, "Saipa is not in group"
+SAIPA = 44891482026867833
 
 
+@pytest.mark.online
+@pytest.mark.asyncio
+async def test_get_ins_codes():
+    res = await InstrumentList().get_ins_codes()
+    assert res, "no data available"
+    assert (SAIPA, "IRO1SIPA0001") in res, "Saipa is not in group"
+    assert len(res) > 300, "there is a problem during downloading stocks"
+
+
+@pytest.mark.online
 def test_get_groups():
     groups = download.get_stock_groups()
     size = len(groups)
     assert size > 60, "there is a problem during downloading groups"
-
-
-def test_get_detail():
-    data = download.get_stock_detail(SAIPA)
-    assert data["code"] == SAIPA
-    keys = [
-        "code",
-        "instId",
-        "insCode",
-        "baseVol",
-        "name",
-        "group_name",
-        "title",
-        "sectorPe",
-        "shareCount",
-        "estimatedEps",
-        "group_code",
-    ]
-    for key in keys:
-        assert key in data.keys()
-    data = download.get_stock_detail("123")
-    if isinstance(data, bool):
-        assert data == False
 
 
 # def test_error_get_detail(self):

@@ -1,16 +1,23 @@
-from asyncio import tasks
-import requests
+from typing import Optional
 import re
-import time
-import tehran_stocks.config as db
-from tehran_stocks.models import Stocks
-from .base import BASE_URL
+from tehran_stocks.models import Instrument
+from .base import BASE_URL, FetchMixin
+from csv import reader
 
-def get_stock_ids():
-    url = f"{BASE_URL}/tsev2/data/MarketWatchPlus.aspx"
-    r = requests.get(url)
-    ids = set(re.findall(r"\d{15,20}", r.text))
-    return list(ids)
+import requests
+
+
+class InstrumentList(FetchMixin):
+    @classmethod
+    async def get_ins_codes(cls) -> list[tuple[int, str]]:
+        url = f"{cls.old_base_url}/tsev2/data/MarketWatchPlus.aspx"
+        res = await cls._fetch_raw(url)
+        # '164726,1186086,579439@@40456523152045946,IRO9AGAH0371,ضترو1100,اختيارخ ص آگاه-7500-02/11/15,61031,0,3750,3750,0,0,0,0,0,3750,,1,2079,3,68,500000.00,1.00,1000,311,,5;68267250263823360,IRO9AGAH0381,ضترو'
+        data = reader(res.split("@@")[-1].split(";"), delimiter=",")
+        ids = []
+        for row in data:
+            ids.append((int(row[0]), row[1]))
+        return ids
 
 
 def get_stock_groups():
@@ -23,18 +30,21 @@ def get_stock_groups():
 
 
 def create_or_update_stock_from_dict(stock_id, stock):
-    if exist := Stocks.query.filter_by(code=stock_id).first():
+    stock_obj = Instrument.query.filter_by(code=stock_id).first()
+    if stock_obj:
         print(f"stock with code {stock_id} exist")
-        exist.shareCount = stock["shareCount"]
-        exist.baseVol = stock["baseVol"]
-        exist.sectorPe = stock["sectorPe"]
-        exist.estimatedEps = stock["estimatedEps"]
+        stock_obj.shareCount = stock["shareCount"]
+        stock_obj.baseVol = stock["baseVol"]
+        stock_obj.sectorPe = stock["sectorPe"]
+        stock_obj.estimatedEps = stock["estimatedEps"]
     else:
+        stock_obj = Instrument(**stock)
         print(f"creating stock with code {stock_id}")
-        db.session.add(Stocks(**stock))
+        # db.session.add(stock_obj)
+    return stock_obj
 
 
-def get_stock_detail(stock_id: str) -> Stocks:
+def get_stock_detail(stock_id: str) -> Optional[Instrument]:
     """
     Dowload stocks detail and save them to the database.
     better not use it alone.
@@ -59,51 +69,51 @@ def get_stock_detail(stock_id: str) -> Stocks:
             "instId": re.findall(r"InstrumentID='([\w\d]*)|$',", r.text)[0],
         }
     except IndexError:
-        return 
+        return None
 
-    stock["insCode"] = (
-        stock_id if re.findall(r"InsCode='(\d*)',", r.text)[0] == stock_id else 0
+    stock["ins_code"] = (
+        stock_id if re.findall(r"ins_code='(\d*)',", r.text)[0] == stock_id else 0
     )
     stock["baseVol"] = float(re.findall(r"BaseVol=([\.\d]*),", r.text)[0])
     try:
         stock["name"] = re.findall(r"LVal18AFC='([\D]*)',", r.text)[0]
-    except:
-        return
+    except Exception:
+        return None
     try:
         stock["group_name"] = re.findall(r"LSecVal='([\D]*)',", r.text)[0]
-    except:
-        return
+    except Exception:
+        return None
     try:
         stock["title"] = re.findall(r"Title='([\D]*)',", r.text)[0]
-    except:
-        return
+    except Exception:
+        return None
     try:
         stock["sectorPe"] = float(re.findall(r"SectorPE='([\.\d]*)',", r.text)[0])
-    except:
+    except Exception:
         stock["sectorPe"] = None
     try:
         stock["shareCount"] = float(re.findall(r"ZTitad=([\.\d]*),", r.text)[0])
-    except:
+    except Exception:
         stock["shareCount"] = None
 
     try:
         stock["estimatedEps"] = float(
             re.findall(r"EstimatedEPS='([\.\d]*)',", r.text)[0]
         )
-    except:
+    except Exception:
         stock["estimatedEps"] = None
     stock["group_code"] = re.findall(r"CSecVal='([\w\d]*)|$',", r.text)[0]
     if stock["name"] == "',DEven='',LSecVal='',CgrValCot='',Flow='',InstrumentID='":
-        return False
+        return None
 
-    create_or_update_stock_from_dict(stock_id, stock)
+    stock_obj = create_or_update_stock_from_dict(stock_id, stock)
 
-    try:
-        db.session.commit()
-    except:
-        print(f"stock with code {stock_id} exist")
-        db.session.rollback()
-    return stock
+    # try:
+    #     db.session.commit()
+    # except Exception:
+    #     print(f"stock with code {stock_id} exist")
+    #     db.session.rollback()
+    return stock_obj
 
 
 def fill_stock_table():
@@ -115,6 +125,7 @@ def fill_stock_table():
     4- save them to database
     5- guides you to use the package
     """
+    pass
     # URL = "https://ts-api.ir/api/stocks"
     # try:
     #     print("try Downloading stock table from the package api... ")
@@ -137,17 +148,17 @@ def fill_stock_table():
     # except Exception as e:
     #     print(e)
     #     pass
-    print("Downloading group ids...")
-    stocks = get_stock_ids()
-    for i, stock in enumerate(stocks):
-        get_stock_detail(stock)
-        print(
-            f"downloading stocks details, changes: {(i+1)/len(stocks)*100:.1f}% completed",
-            end="\r",
-        )
+    # print("Downloading group ids...")
+    # # stocks = get_stock_ids()
+    # for i, stock in enumerate(stocks):
+    #     get_stock_detail(stock)
+    #     print(
+    #         f"downloading stocks details, changes: {(i+1)/len(stocks)*100:.1f}% completed",
+    #         end="\r",
+    #     )
 
-    print("Add all groups, you can download stock price by following codes")
-    print("from tehran_stocks import downloader")
-    print(" downloader.download_all() # for downloading all data")
-    print("downloader.download_group(group_id) # to download specefic group data")
-    print("downloader.download_stock(stock) to downloand stock specefic")
+    # print("Add all groups, you can download stock price by following codes")
+    # print("from tehran_stocks import downloader")
+    # print(" downloader.download_all() # for downloading all data")
+    # print("downloader.download_group(group_id) # to download specefic group data")
+    # print("downloader.download_stock(stock) to downloand stock specefic")

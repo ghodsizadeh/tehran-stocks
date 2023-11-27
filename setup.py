@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
 
 # read the contents of your README file
@@ -9,7 +9,6 @@ with open(path.join(THISDIRECTORY, "README.md")) as f:
     LONGDESC = f.read()
 
 setup(
-
     name="tehran-stocks",
     version="0.8.2.2",
     description="Data Downloader for Tehran stock market",

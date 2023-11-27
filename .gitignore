@@ -129,3 +129,5 @@ dmypy.json
 conda/
 node_modules
 src/pxy.py
+urls.txt
+data.csv

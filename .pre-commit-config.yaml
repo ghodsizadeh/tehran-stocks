@@ -1,0 +1,24 @@
+repos:
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  # Ruff version.
+  rev: v0.1.1
+  hooks:
+    - id: ruff
+      args: [--fix, --exit-non-zero-on-fix]
+
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  # Ruff version.
+  rev: v0.1.1
+  hooks:
+    - id: ruff-format
+
+-   repo: local
+    hooks:
+      - id: pr-mypy
+        name: mypy
+        entry: poetry run mypy
+        language: python
+        types: [python]
+        args: ["--ignore-missing-imports", "--scripts-are-modules"]
+        require_serial: true
+           
