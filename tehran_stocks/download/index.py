@@ -74,8 +74,7 @@ class IndexDetailsAPI(InstrumentDetailAPI):
 
     async def get_index_companies(self):
         url = f"{self.cdn_url}/api/ClosingPrice/GetIndexCompany/{self.ins_code}"
-        data = await self._fetch(url)
-        return data
+        return await self._fetch(url)
 
 
 async def main():

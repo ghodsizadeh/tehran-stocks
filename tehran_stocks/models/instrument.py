@@ -14,9 +14,6 @@ from tehran_stocks.download.details import InstrumentDetailAPI
 from tehran_stocks.schema.details import InstrumentInfo, ShareHolderItem
 from tehran_stocks.download.price import InstrumentPriceHistory
 
-if TYPE_CHECKING:
-    pass
-
 
 class Instrument(Base):
     __tablename__ = "instruments"
@@ -77,19 +74,12 @@ class Instrument(Base):
 
         api = InstrumentPriceHistory(self.ins_code)
         session = get_session()
-        # last_exist_date = (
-        #     self.prices.order_by(InstrumentPrice.date.desc())
-        #     .first()
-        #     .date
-        #     .strftime("%Y%m%d")
-        # )
-        last_price = (
+        if last_price := (
             session.query(InstrumentPrice)
             .filter(InstrumentPrice.ins_code == self.ins_code)
             .order_by(InstrumentPrice.date.desc())
             .first()
-        )
-        if last_price:
+        ):
             last_exist_date = f"{last_price.date}"
         else:
             last_exist_date = None
