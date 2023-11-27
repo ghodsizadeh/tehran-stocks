@@ -27,8 +27,7 @@ def get_engine_from_config():
     database_config = get_database_config()
     engine_uri = create_engine_uri(database_config)
     logging.info(engine_uri)
-    engine = create_engine(engine_uri)
-    return engine
+    return create_engine(engine_uri)
 
 
 class ClassProperty(object):
@@ -48,8 +47,7 @@ def get_session(engine=None):
     if engine is None:
         engine = get_engine_from_config()
     session_maker = sessionmaker(bind=engine)
-    session = session_maker()
-    return session
+    return session_maker()
 
 
 class QueryMixin:

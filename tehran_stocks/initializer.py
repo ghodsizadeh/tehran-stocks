@@ -44,8 +44,7 @@ def check_database(engine):
 def create_engine():
     database_config = config_file.get_database_config()
     engine_uri = engine_config.create_engine_uri(database_config)
-    engine = engine_config.create_engine(engine_uri)
-    return engine
+    return engine_config.create_engine(engine_uri)
 
 
 def create_database(engine):
@@ -59,9 +58,10 @@ async def get_all_price() -> None:
     engine = create_engine()
     session = get_session(engine=engine)
     instruments: list[Instrument] = session.query(models.Instrument).all()
-    tasks = []
-    for instrument in instruments:
-        tasks.append(asyncio.create_task(instrument._get_update_price(save=False)))
+    tasks = [
+        asyncio.create_task(instrument._get_update_price(save=False))
+        for instrument in instruments
+    ]
     #  run in batch of 100
     batch_size = 20
     t0 = time()
@@ -94,12 +94,13 @@ async def fill_db() -> None:
     t0 = time()
 
     ins_ids = await InstrumentList.get_ins_codes()
-    tasks = []
-    for ins_code, ins_id in ins_ids:
-        if ins_id[2:4] in basic_instrument_types:
-            tasks.append(
-                asyncio.create_task(InstrumentDetailAPI(ins_code).get_instrument_info())
-            )
+    tasks = [
+        asyncio.create_task(
+            InstrumentDetailAPI(ins_code).get_instrument_info()
+        )
+        for ins_code, ins_id in ins_ids
+        if ins_id[2:4] in basic_instrument_types
+    ]
     print(f"Creating {len(tasks)} tasks in {time()-t0:.1f} seconds")
     print("Start downloading details, it may take few minutes")
     batch_size = 100

@@ -28,7 +28,7 @@ async def test_get_details(api: InstrumentDetailAPI):
     assert isinstance(data, InstrumentInfo)
     assert data.ins_code == "48990026850202503"
     assert data.name == "خگستر"
-    assert (data.d_even == int(datetime.now().strftime("%Y%m%d"))) or (data.d_even == 0)
+    assert data.d_even in [int(datetime.now().strftime("%Y%m%d")), 0]
 
 
 @pytest.mark.online
