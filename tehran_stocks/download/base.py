@@ -1,3 +1,4 @@
+import asyncio
 from typing import Dict
 import aiohttp
 
@@ -42,6 +43,7 @@ class FetchMixin:
                 if resp.status != 200:
                     retries -= 1
                     if retries > 0:
+                        await asyncio.sleep(0.1)
                         return await cls._fetch(url, retries)
                     raise Exception(
                         f"Error fetching {url}: response code {resp.status}"

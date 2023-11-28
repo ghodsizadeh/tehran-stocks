@@ -23,7 +23,13 @@ def create_engine_uri(database_config):
     return f"{engine}://{user}:{password}@{host}:{port}/{database}"
 
 
+global_engine = None
+
+
 def get_engine_from_config():
+    global global_engine
+    if global_engine is not None:
+        return global_engine
     database_config = get_database_config()
     engine_uri = create_engine_uri(database_config)
     logging.info(engine_uri)

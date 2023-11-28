@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from typing import List, Optional, TYPE_CHECKING
 
 import pandas as pd
@@ -91,10 +92,16 @@ class Instrument(Base):
         )
         if last_price:
             last_exist_date = f"{last_price.date}"
+            # increse one day
+
+            last_exist_date = (
+                datetime.strptime(last_exist_date, "%Y%m%d") + timedelta(days=1)
+            ).strftime("%Y%m%d")
         else:
             last_exist_date = None
         data = await api.get_stock_price_history(start_date=last_exist_date)
         data["ins_code"] = self.ins_code
+
         if save:
             data.to_sql("instrument_price", engine, if_exists="append", index=False)
         return data

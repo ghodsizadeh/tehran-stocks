@@ -9,9 +9,8 @@ homepage = "https://ghodsizadeh.github.io/tehran-stocks/"
 repository = "https://github.com/ghodsizadeh/tehran-stocks.git"
 
 
-
 [tool.poetry.dependencies]
-python = "^3.8.1"
+python = ">=3.8.1,<3.9.7 || >3.9.7,<4.0.0"
 requests = "^2.26.0"
 SQLAlchemy = "^1.4.28"
 jalali-pandas = "^0.2.0"
@@ -22,6 +21,7 @@ PyYAML = "^6.0"
 pandas = "^2.0.3"
 pydantic = "^2.4.2"
 tqdm = "^4.66.1"
+streamlit = "^1.28.2"
 
 
 [tool.poetry.group.dev.dependencies]

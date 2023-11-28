@@ -63,10 +63,11 @@ async def get_all_price() -> None:
     for instrument in instruments:
         tasks.append(asyncio.create_task(instrument._get_update_price(save=False)))
     #  run in batch of 100
-    batch_size = 20
+    batch_size = 50
     t0 = time()
     failed_tasks = 0
     finished_tasks = 0
+    # tasks = tasks[:10]
     for i in tqdm(range(0, len(tasks), batch_size)):
         result = await asyncio.gather(
             *tasks[i : i + batch_size], return_exceptions=True
@@ -88,15 +89,19 @@ async def get_all_price() -> None:
     #     await task
 
 
-async def fill_db() -> None:
-    print("Downloading instruments name and details from TSETMC")
-    print("may take few minutes")
+async def get_instruments() -> None:
+    engine = create_engine()
+    session = get_session(engine=engine)
     t0 = time()
 
     ins_ids = await InstrumentList.get_ins_codes()
     tasks = []
+    # select all instruments that are not in database
+    existing_ins_ids = session.execute("select ins_code from instruments").fetchall()
+    existing_ins_ids = {i[0] for i in existing_ins_ids}
+
     for ins_code, ins_id in ins_ids:
-        if ins_id[2:4] in basic_instrument_types:
+        if ins_id[2:4] in basic_instrument_types and ins_id not in existing_ins_ids:
             tasks.append(
                 asyncio.create_task(InstrumentDetailAPI(ins_code).get_instrument_info())
             )
@@ -105,7 +110,7 @@ async def fill_db() -> None:
     batch_size = 100
     t0 = time()
     results: List[InstrumentInfo] = []
-    tasks = tasks[:400]
+    # tasks = tasks[:5]
     for i in tqdm(range(0, len(tasks), batch_size)):
         # await asyncio.gather(*tasks[i:i+batch_size])
         results += await asyncio.gather(
@@ -118,8 +123,6 @@ async def fill_db() -> None:
     # print(f"{len([i for i in results if isinstance(i, Exception)])} failed, and
     print(f"{len(failed_tasks)} failed, and {len(results)-len(failed_tasks)} success")
 
-    engine = create_engine()
-    session = get_session(engine=engine)
     print("Adding to database")
     t0 = time()
     for result in tqdm(results):
@@ -128,13 +131,20 @@ async def fill_db() -> None:
             session.add(item)
             try:
                 session.commit()
-            except Exception as e:
-                print(e)
+            except Exception:
                 session.rollback()
     print(f"Done in {time()-t0:.1f} seconds")
+    n_in_db = session.execute("select count(*) from instruments").scalar()
+    print(f"{n_in_db} instruments in database")
+
+
+async def fill_db() -> None:
+    print("Downloading instruments name and details from TSETMC")
+    print("may take few minutes")
+
+    await get_instruments()
 
     # check if all instruments are added to database
-    n_in_db = session.execute("select count(*) from instruments").scalar()
     # number of failed tasks
 
     # breakpoint()
