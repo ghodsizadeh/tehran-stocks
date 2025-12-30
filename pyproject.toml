@@ -3,9 +3,34 @@ name = "tehran-stocks"
 version = "2.0.0"
 description = "Data Downloader for Tehran stock market"
 authors = [{ name = "Mehdi Ghodsizadeh", email = "mehdi.ghodsizadeh@gmail.com" }]
+maintainers = [{ name = "Mehdi Ghodsizadeh", email = "mehdi.ghodsizadeh@gmail.com" }]
 requires-python = ">=3.11,<4"
-readme = "README.md"
-license = "MIT"
+readme = { file = "README.md", content-type = "text/markdown" }
+license = { file = "LICENSE" }
+keywords = [
+    "tehran",
+    "tsetmc",
+    "iran",
+    "stocks",
+    "finance",
+    "market-data",
+    "pandas",
+    "sqlalchemy",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business :: Financial",
+    "Topic :: Office/Business :: Financial :: Investment",
+]
 dependencies = [
     "requests>=2.32.5",
     "SQLAlchemy>=2.0.45",
@@ -19,7 +44,10 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://ghodsizadeh.github.io/tehran-stocks/"
-Repository = "https://github.com/ghodsizadeh/tehran-stocks.git"
+Documentation = "https://ghodsizadeh.github.io/tehran-stocks/"
+Repository = "https://github.com/ghodsizadeh/tehran-stocks"
+Issues = "https://github.com/ghodsizadeh/tehran-stocks/issues"
+Changelog = "https://github.com/ghodsizadeh/tehran-stocks/releases"
 
 [dependency-groups]
 dev = [
