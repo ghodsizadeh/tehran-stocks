@@ -1,7 +1,0 @@
-language: python
-
-install:
-  - pip install pipenv pytest
-  - pipenv install --skip-lock
-
-script: pytest
