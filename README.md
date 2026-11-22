@@ -53,6 +53,8 @@ A python package that helps to access TSETMC stock price history, Using OOP Inte
 
 ## 0 - Install
 
+Python 3.11 or newer is required.
+
 ```bash
 pip install tehran_stocks
 ```
