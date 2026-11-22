@@ -59,6 +59,8 @@ Python 3.11 or newer is required.
 pip install tehran_stocks
 ```
 
+To work from a checkout, install [uv](https://docs.astral.sh/uv/getting-started/installation/) and run `uv sync --locked --python 3.11`. Build a wheel and source distribution with `uv build`.
+
 ## 1- Initialization
 
 For first use you need initialize the database
@@ -66,7 +68,7 @@ For first use you need initialize the database
 ### 1-1 Command line
 
 ```bash
-ts-get init  # Set up to sqlite database
+uv run --locked python bin/ts-get init  # From a source checkout
 ```
 
 ### 1-2 Python
@@ -83,9 +85,9 @@ During initialization you will prompt for downloading all prices. if you answer 
 ### 2-1 Command line
 
 ```bash
-ts-get update # update  all price , or download all if no price exist
-ts-get  group 34 ## 34 is the code for car's group.
-ts-get get_groups ## get group name and group codes
+uv run --locked python bin/ts-get update       # Update all prices
+uv run --locked python bin/ts-get group 34     # Download prices for the cars group
+uv run --locked python bin/ts-get get_groups   # List group names and codes
 ```
 
 ### 2-2 Python
