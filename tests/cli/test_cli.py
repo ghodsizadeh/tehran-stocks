@@ -661,10 +661,13 @@ def test_error_exit_codes_global_options_and_hooks(monkeypatch: pytest.MonkeyPat
     assert captured_calls[-1] == {"timeout": 25.0, "proxy": "http://127.0.0.1:8888"}
 
     # Verify PR 4 (mcp) hook prefers run_server when present and falls back to create_server
+    import tehran_stocks
+
     run_server_calls: list[dict[str, Any]] = []
     fake_mcp_run_mod = types.ModuleType("tehran_stocks.mcp_server")
     fake_mcp_run_mod.run_server = lambda **kwargs: run_server_calls.append(kwargs)  # type: ignore[attr-defined]
     monkeypatch.setitem(sys.modules, "tehran_stocks.mcp_server", fake_mcp_run_mod)
+    monkeypatch.setattr(tehran_stocks, "mcp_server", fake_mcp_run_mod, raising=False)
 
     mcp_run_res = runner.invoke(
         app,
@@ -697,6 +700,7 @@ def test_error_exit_codes_global_options_and_hooks(monkeypatch: pytest.MonkeyPat
 
     fake_mcp_mod.create_server = fake_create_server  # type: ignore[attr-defined]
     monkeypatch.setitem(sys.modules, "tehran_stocks.mcp_server", fake_mcp_mod)
+    monkeypatch.setattr(tehran_stocks, "mcp_server", fake_mcp_mod, raising=False)
 
     mcp_res = runner.invoke(app, ["mcp", "--db", "/tmp/test.sqlite", "--transport", "stdio"])
     assert mcp_res.exit_code == 0

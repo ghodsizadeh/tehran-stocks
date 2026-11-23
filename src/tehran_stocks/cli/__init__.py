@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from enum import Enum
+import importlib
 import math
 from pathlib import Path
 from typing import Annotated, Any, TypeVar
@@ -1331,7 +1332,7 @@ def mcp_cmd(
         if not math.isfinite(effective_timeout) or effective_timeout <= 0:
             raise ValueError("--timeout must be a positive finite number.")
         try:
-            from tehran_stocks import mcp_server  # type: ignore[import-not-found]
+            mcp_server = importlib.import_module("tehran_stocks.mcp_server")
         except ImportError as exc:
             raise TehranStocksError(
                 "MCP server module (tehran_stocks.mcp_server) is not available in this build."
