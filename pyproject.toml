@@ -75,13 +75,16 @@ addopts = "-m 'not live'"
 asyncio_default_fixture_loop_scope = "function"
 
 [tool.hatch.build.targets.sdist]
-include = ["src/tehran_stocks"]
+include = ["src/tehran_stocks", "skills"]
 
 [tool.hatch.build.targets.wheel]
 include = ["src/tehran_stocks"]
 
 [tool.hatch.build.targets.wheel.sources]
 "src/tehran_stocks" = "tehran_stocks"
+
+[tool.hatch.build.targets.wheel.force-include]
+"skills" = "tehran_stocks/_skills"
 
 [build-system]
 requires = ["hatchling"]
