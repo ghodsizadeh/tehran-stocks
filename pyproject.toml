@@ -46,6 +46,10 @@ dependencies = [
 postgres = ["psycopg[binary]>=3.2"]
 duckdb = ["duckdb>=1.1", "duckdb-engine>=0.13"]
 
+[project.scripts]
+tse = "tehran_stocks.cli:main"
+tehran-stocks = "tehran_stocks.cli:main"
+
 [project.urls]
 Homepage = "https://ghodsizadeh.github.io/tehran-stocks/"
 Documentation = "https://ghodsizadeh.github.io/tehran-stocks/"
