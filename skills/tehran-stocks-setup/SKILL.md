@@ -218,6 +218,11 @@ tse skill install --target auto --scope project
 tse skill install --target claude --scope global
 # Supported --target values: auto | claude | cursor | codex | antigravity | agents
 # Supported --scope values:  project | global
+
+# Existing installs (directories or npx-skills symlinks) are never replaced by default:
+# the command checks every destination first and exits without changing anything.
+# Pass --overwrite to replace them (copies are staged, then swapped in atomically).
+tse skill install --target claude --scope global --overwrite
 ```
 
 ---

@@ -390,7 +390,18 @@ def test_cli_skill_install_targets_and_scopes(
     assert ("claude", fake_home / ".claude" / "skills") in auto_global
     assert ("antigravity", fake_home / ".gemini" / "config" / "skills") in auto_global
 
-    # 6. --no-overwrite rejects existing target cleanly; unknown skill rejects cleanly
+    # 6. Existing installs are preserved by default and with --no-overwrite; unknown skill rejects cleanly
+    claude_setup_md = fake_home / ".claude" / "skills" / "tehran-stocks-setup" / "SKILL.md"
+    claude_setup_md.write_text("LOCAL EDIT", encoding="utf-8")
+    default_res = runner.invoke(
+        app,
+        ["skill", "install", "--target", "claude", "--scope", "global"],
+    )
+    assert default_res.exit_code == 1
+    assert default_res.stdout == ""
+    assert "--overwrite" in default_res.stderr
+    assert claude_setup_md.read_text(encoding="utf-8") == "LOCAL EDIT"
+
     no_overwrite_res = runner.invoke(
         app,
         [
@@ -406,6 +417,7 @@ def test_cli_skill_install_targets_and_scopes(
     assert no_overwrite_res.exit_code == 1
     assert no_overwrite_res.stdout == ""
     assert "TehranStocksError:" in no_overwrite_res.stderr
+    assert claude_setup_md.read_text(encoding="utf-8") == "LOCAL EDIT"
 
     bad_skill_res = runner.invoke(
         app,
@@ -450,9 +462,33 @@ def test_cli_skill_install_targets_and_scopes(
     assert broken_no_overwrite.exit_code == 1
     assert "TehranStocksError:" in broken_no_overwrite.stderr
 
-    res_symlink = runner.invoke(
+    # Default (no flag) preserves both valid and broken symlinks untouched.
+    res_default = runner.invoke(
         app,
         ["skill", "install", "--target", "agents", "--scope", "project", "--json"],
+    )
+    assert res_default.exit_code == 1
+    assert res_default.stdout == ""
+    assert "--overwrite" in res_default.stderr
+    assert valid_link.is_symlink() and valid_link.resolve() == real_target.resolve()
+    assert broken_link.is_symlink() and not broken_link.exists()
+    assert sorted(p.name for p in skills_target.iterdir()) == [
+        "tehran-stocks-analysis",
+        "tehran-stocks-setup",
+    ]
+
+    res_symlink = runner.invoke(
+        app,
+        [
+            "skill",
+            "install",
+            "--target",
+            "agents",
+            "--scope",
+            "project",
+            "--overwrite",
+            "--json",
+        ],
     )
     assert res_symlink.exit_code == 0
     assert not valid_link.is_symlink() and (valid_link / "SKILL.md").is_file()
@@ -460,3 +496,169 @@ def test_cli_skill_install_targets_and_scopes(
     assert (real_target / "SKILL.md").read_text(encoding="utf-8") == (
         "---\nname: old\ndescription: old\n---\n"
     )
+    # No staging/backup leftovers inside the skills directory.
+    assert sorted(p.name for p in skills_target.iterdir()) == [
+        "tehran-stocks-analysis",
+        "tehran-stocks-setup",
+    ]
+
+
+def _write_marker_skill(path: Path, marker: str) -> None:
+    path.mkdir(parents=True, exist_ok=True)
+    (path / "SKILL.md").write_text(marker, encoding="utf-8")
+
+
+def _install_args(base: Path, *extra: str) -> list[str]:
+    return [
+        "skill",
+        "install",
+        "--target",
+        "agents",
+        "--scope",
+        "project",
+        "--dir",
+        str(base),
+        *extra,
+    ]
+
+
+ALL_SKILL_NAMES = ["tehran-stocks-analysis", "tehran-stocks-setup"]
+
+
+def test_cli_skill_install_default_preservation(tmp_path: Path) -> None:
+    base = tmp_path / "base"
+    skills_dir = base / ".agents" / "skills"
+
+    first = runner.invoke(app, _install_args(base, "--json"))
+    assert first.exit_code == 0
+    assert len(json.loads(first.stdout)) == 2
+
+    setup_md = skills_dir / "tehran-stocks-setup" / "SKILL.md"
+    setup_md.write_text("LOCAL EDIT", encoding="utf-8")
+
+    again = runner.invoke(app, _install_args(base))
+    assert again.exit_code == 1
+    assert again.stdout == ""
+    assert "TehranStocksError:" in again.stderr
+    assert "--overwrite" in again.stderr
+    assert setup_md.read_text(encoding="utf-8") == "LOCAL EDIT"
+
+    forced = runner.invoke(app, _install_args(base, "--overwrite", "--json"))
+    assert forced.exit_code == 0
+    assert {row["skill"] for row in json.loads(forced.stdout)} == set(ALL_SKILL_NAMES)
+    assert setup_md.read_text(encoding="utf-8").startswith("---\nname: tehran-stocks-setup")
+    assert sorted(p.name for p in skills_dir.iterdir()) == ALL_SKILL_NAMES
+
+
+def test_cli_skill_install_multi_skill_preflight_is_atomic(tmp_path: Path) -> None:
+    # Only skill 2 (setup) exists: skill 1 (analysis) must NOT be installed either.
+    base = tmp_path / "base"
+    skills_dir = base / ".agents" / "skills"
+    _write_marker_skill(skills_dir / "tehran-stocks-setup", "EXISTING SETUP")
+
+    res = runner.invoke(app, _install_args(base))
+    assert res.exit_code == 1
+    assert res.stdout == ""
+    assert "TehranStocksError:" in res.stderr
+    assert not (skills_dir / "tehran-stocks-analysis").exists()
+    assert (skills_dir / "tehran-stocks-setup" / "SKILL.md").read_text(
+        encoding="utf-8"
+    ) == "EXISTING SETUP"
+    assert sorted(p.name for p in skills_dir.iterdir()) == ["tehran-stocks-setup"]
+
+    # Both exist: neither is touched.
+    _write_marker_skill(skills_dir / "tehran-stocks-analysis", "EXISTING ANALYSIS")
+    res_both = runner.invoke(app, _install_args(base, "--no-overwrite"))
+    assert res_both.exit_code == 1
+    assert (skills_dir / "tehran-stocks-analysis" / "SKILL.md").read_text(
+        encoding="utf-8"
+    ) == "EXISTING ANALYSIS"
+    assert (skills_dir / "tehran-stocks-setup" / "SKILL.md").read_text(
+        encoding="utf-8"
+    ) == "EXISTING SETUP"
+
+    # Explicit --skill list is preflighted as a whole too.
+    other_base = tmp_path / "other"
+    _write_marker_skill(other_base / ".agents" / "skills" / "tehran-stocks-setup", "X")
+    fresh_target_res = runner.invoke(
+        app,
+        _install_args(other_base, "--skill", "tehran-stocks-analysis,tehran-stocks-setup"),
+    )
+    assert fresh_target_res.exit_code == 1
+    assert not (other_base / ".agents" / "skills" / "tehran-stocks-analysis").exists()
+
+
+def test_cli_skill_install_failed_copy_rolls_back(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    base = tmp_path / "base"
+    skills_dir = base / ".agents" / "skills"
+    _write_marker_skill(skills_dir / "tehran-stocks-analysis", "OLD ANALYSIS")
+    _write_marker_skill(skills_dir / "tehran-stocks-setup", "OLD SETUP")
+
+    original_copy = skills_cmd._copy_traversable_dir
+
+    def failing_copy(src_dir: Any, dst_dir: Path) -> int:
+        if dst_dir.name == "tehran-stocks-setup":
+            raise OSError("simulated disk full")
+        return original_copy(src_dir, dst_dir)
+
+    monkeypatch.setattr(skills_cmd, "_copy_traversable_dir", failing_copy)
+
+    res = runner.invoke(app, _install_args(base, "--overwrite"))
+    assert res.exit_code == 1
+    assert res.stdout == ""
+    assert "TehranStocksError:" in res.stderr
+    assert "simulated" in res.stderr
+    assert (skills_dir / "tehran-stocks-analysis" / "SKILL.md").read_text(
+        encoding="utf-8"
+    ) == "OLD ANALYSIS"
+    assert (skills_dir / "tehran-stocks-setup" / "SKILL.md").read_text(
+        encoding="utf-8"
+    ) == "OLD SETUP"
+    assert sorted(p.name for p in skills_dir.iterdir()) == ALL_SKILL_NAMES
+
+    # Failed copy into a brand-new destination leaves no partial skill or empty dirs behind.
+    fresh = tmp_path / "fresh"
+    fresh_res = runner.invoke(app, _install_args(fresh))
+    assert fresh_res.exit_code == 1
+    assert not (fresh / ".agents").exists()
+
+
+def test_cli_skill_install_failed_swap_restores_previous_installs(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    base = tmp_path / "base"
+    skills_dir = base / ".agents" / "skills"
+    skills_dir.mkdir(parents=True)
+
+    external = tmp_path / "external_analysis"
+    _write_marker_skill(external, "EXTERNAL ANALYSIS")
+    analysis_link = skills_dir / "tehran-stocks-analysis"
+    analysis_link.symlink_to(external, target_is_directory=True)
+    _write_marker_skill(skills_dir / "tehran-stocks-setup", "OLD SETUP")
+
+    original_swap = skills_cmd._swap_in_staged
+
+    def failing_swap(staged: Path, skill_dest: Path, backup: Path) -> None:
+        if skill_dest.name == "tehran-stocks-setup":
+            raise OSError("simulated rename failure")
+        original_swap(staged, skill_dest, backup)
+
+    monkeypatch.setattr(skills_cmd, "_swap_in_staged", failing_swap)
+
+    res = runner.invoke(app, _install_args(base, "--overwrite"))
+    assert res.exit_code == 1
+    assert res.stdout == ""
+    assert "TehranStocksError:" in res.stderr
+
+    # Skill 1 had already been swapped in; it must be rolled back to the original symlink.
+    assert analysis_link.is_symlink()
+    assert analysis_link.resolve() == external.resolve()
+    assert (external / "SKILL.md").read_text(encoding="utf-8") == "EXTERNAL ANALYSIS"
+    assert (skills_dir / "tehran-stocks-setup" / "SKILL.md").read_text(
+        encoding="utf-8"
+    ) == "OLD SETUP"
+    assert sorted(p.name for p in skills_dir.iterdir()) == ALL_SKILL_NAMES

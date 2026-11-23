@@ -7,10 +7,12 @@ from dataclasses import dataclass
 from enum import Enum
 from importlib import resources
 from importlib.resources.abc import Traversable
+import os
 from pathlib import Path
 import re
 import shutil
 import sys
+import tempfile
 from typing import Annotated, Any
 
 import typer
@@ -514,6 +516,127 @@ def _parse_skill_names(values: Sequence[str] | None) -> list[str] | None:
     return names or None
 
 
+@dataclass(frozen=True, slots=True)
+class _InstallPlan:
+    """A single ``(destination skills dir, skill)`` pair to install."""
+
+    target_label: str
+    skills_dest: Path
+    skill: SkillMetadata
+
+    @property
+    def skill_dest(self) -> Path:
+        return self.skills_dest / self.skill.name
+
+
+def _path_present(path: Path) -> bool:
+    """Return True for existing files/dirs and for valid *or broken* symlinks."""
+    return path.is_symlink() or path.exists()
+
+
+def _remove_path(path: Path) -> None:
+    """Remove a file, symlink (never following it), or directory tree."""
+    if path.is_symlink() or path.is_file():
+        path.unlink()
+    elif path.is_dir():
+        shutil.rmtree(path)
+
+
+def _ensure_directory(path: Path) -> list[Path]:
+    """Create ``path`` (and parents); return the directories that did not exist before."""
+    missing: list[Path] = []
+    current = path
+    while not _path_present(current) and current.parent != current:
+        missing.append(current)
+        current = current.parent
+    path.mkdir(parents=True, exist_ok=True)
+    return missing
+
+
+def _swap_in_staged(staged: Path, skill_dest: Path, backup: Path) -> None:
+    """Move an existing ``skill_dest`` aside to ``backup`` and move ``staged`` into place.
+
+    Both moves are same-filesystem renames (staging lives inside the destination skills dir),
+    and symlinks are moved as links so their targets are never touched.
+    """
+    if _path_present(skill_dest):
+        os.replace(skill_dest, backup)
+    os.replace(staged, skill_dest)
+
+
+def _restore_original(skill_dest: Path, staged: Path, backup: Path, had_existing: bool) -> None:
+    """Undo ``_swap_in_staged`` for one skill, restoring the previous install if it was moved."""
+    if had_existing:
+        if _path_present(backup):
+            if _path_present(skill_dest):
+                _remove_path(skill_dest)
+            os.replace(backup, skill_dest)
+    elif _path_present(skill_dest) and not _path_present(staged):
+        _remove_path(skill_dest)
+
+
+def _install_skills_transactionally(plans: Sequence[_InstallPlan]) -> list[int]:
+    """Stage every skill copy first, then swap all into place; roll back everything on failure.
+
+    1. Copy each skill into a private staging dir created inside its destination skills dir.
+       A failed copy aborts before any existing install is touched.
+    2. Swap each staged copy into place, moving any previous install into the staging dir as
+       a backup. If any swap fails, every completed swap is reverted from its backup.
+    3. Remove staging dirs (and backups) only after success or a complete rollback.
+    """
+    created_dirs: list[Path] = []
+    tmp_roots: list[Path] = []
+    keep_roots: list[Path] = []
+    counts: list[int] = []
+    try:
+        staged_entries: list[tuple[_InstallPlan, Path, Path, Path]] = []
+        for plan in plans:
+            assert plan.skill.entry is not None
+            created_dirs.extend(_ensure_directory(plan.skills_dest))
+            tmp_root = Path(
+                tempfile.mkdtemp(prefix=f".{plan.skill.name}.staging-", dir=plan.skills_dest)
+            )
+            tmp_roots.append(tmp_root)
+            staged = tmp_root / plan.skill.name
+            counts.append(_copy_traversable_dir(plan.skill.entry, staged))
+            staged_entries.append((plan, staged, tmp_root / f"{plan.skill.name}.backup", tmp_root))
+
+        attempted: list[tuple[Path, Path, Path, Path, bool]] = []
+        try:
+            for plan, staged, backup, tmp_root in staged_entries:
+                attempted.append(
+                    (plan.skill_dest, staged, backup, tmp_root, _path_present(plan.skill_dest))
+                )
+                _swap_in_staged(staged, plan.skill_dest, backup)
+        except BaseException:
+            for skill_dest, staged, backup, tmp_root, had_existing in reversed(attempted):
+                try:
+                    _restore_original(skill_dest, staged, backup, had_existing)
+                except OSError:
+                    keep_roots.append(tmp_root)
+            raise
+    except BaseException as exc:
+        for tmp_root in tmp_roots:
+            if tmp_root not in keep_roots:
+                shutil.rmtree(tmp_root, ignore_errors=True)
+        for created in sorted(set(created_dirs), key=lambda p: len(p.parts), reverse=True):
+            try:
+                created.rmdir()
+            except OSError:
+                pass
+        if keep_roots:
+            preserved = ", ".join(str(p) for p in keep_roots)
+            raise TehranStocksError(
+                f"Skill installation failed ({exc}) and automatic rollback was incomplete; "
+                f"previous installations were preserved in: {preserved}"
+            ) from exc
+        raise
+
+    for tmp_root in tmp_roots:
+        shutil.rmtree(tmp_root, ignore_errors=True)
+    return counts
+
+
 skill_app = typer.Typer(
     name="skill",
     no_args_is_help=True,
@@ -630,13 +753,21 @@ def skill_install_cmd(
         bool,
         typer.Option(
             "--overwrite/--no-overwrite",
-            help="Replace existing installed skill directories.",
+            help=(
+                "Replace existing installed skills (directories or symlinks). "
+                "Default: refuse and leave existing installs untouched."
+            ),
         ),
-    ] = True,
+    ] = False,
     fmt: FormatOption = OutputFormat.TABLE,
     as_json: JsonOption = False,
 ) -> None:
-    """Install bundled Agent Skills into a project or global agent directory."""
+    """Install bundled Agent Skills into a project or global agent directory.
+
+    Existing skill installs are preserved unless ``--overwrite`` is given. All destinations are
+    checked before anything is written, and copies are staged then swapped into place so a
+    failed install never leaves a skill missing or half-copied.
+    """
     resolved_fmt = resolve_output_format(fmt, as_json)
     requested = _parse_skill_names(skill)
 
@@ -655,35 +786,53 @@ def skill_install_cmd(
             selected = all_skills
 
         destinations = resolve_install_targets(target, scope, base_dir=dest_dir)
-        installed_rows: list[dict[str, Any]] = []
 
+        # Preflight every (skills_dest, skill) pair before creating or modifying anything.
+        plans: list[_InstallPlan] = []
+        seen_dests: set[Path] = set()
         for target_label, skills_dest in destinations:
             for item in selected:
                 if item.entry is None:
                     continue
-                skill_dest = skills_dest / item.name
-                if skill_dest.is_symlink() or skill_dest.exists():
-                    if not overwrite:
-                        raise TehranStocksError(
-                            f"Destination already exists: {skill_dest}. "
-                            "Re-run with --overwrite to replace it."
-                        )
-                    if skill_dest.is_symlink() or skill_dest.is_file():
-                        skill_dest.unlink()
-                    else:
-                        shutil.rmtree(skill_dest)
+                plan = _InstallPlan(target_label=target_label, skills_dest=skills_dest, skill=item)
+                if plan.skill_dest in seen_dests:
+                    continue
+                seen_dests.add(plan.skill_dest)
+                plans.append(plan)
 
-                copied_count = _copy_traversable_dir(item.entry, skill_dest)
-                installed_rows.append(
-                    {
-                        "skill": item.name,
-                        "target": target_label,
-                        "scope": scope.value,
-                        "path": str(skill_dest),
-                        "files": copied_count,
-                        "source": source,
-                    }
+        for skills_dest in dict.fromkeys(plan.skills_dest for plan in plans):
+            if _path_present(skills_dest) and not skills_dest.is_dir():
+                raise TehranStocksError(
+                    f"Skills destination is not a directory: {skills_dest}"
                 )
+
+        conflicts = [plan.skill_dest for plan in plans if _path_present(plan.skill_dest)]
+        if conflicts and not overwrite:
+            listed = ", ".join(str(path) for path in conflicts)
+            raise TehranStocksError(
+                f"Destination already exists: {listed}. Nothing was installed and existing "
+                "skills were left unchanged; re-run with --overwrite to replace them."
+            )
+
+        try:
+            copied_counts = _install_skills_transactionally(plans)
+        except OSError as exc:
+            raise TehranStocksError(
+                f"Failed to install Agent Skills ({exc}). Existing installations were left "
+                "unchanged."
+            ) from exc
+
+        installed_rows: list[dict[str, Any]] = [
+            {
+                "skill": plan.skill.name,
+                "target": plan.target_label,
+                "scope": scope.value,
+                "path": str(plan.skill_dest),
+                "files": copied_count,
+                "source": source,
+            }
+            for plan, copied_count in zip(plans, copied_counts, strict=True)
+        ]
 
     columns = [
         ColumnSpec("skill", "Skill", no_wrap=True),

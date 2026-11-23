@@ -104,22 +104,25 @@ with ts.Client() as client:
 # Convert to DataFrame with Jalali column ("jdate") & JalaliDatetimeIndex
 df = ts.to_dataframe(adj_bars, jalali=True, index_by_date=True)
 
-# Extract Jalali components from the JalaliDatetimeIndex or converted Series
-df["j_year"] = df.index.year
-df["j_month"] = df.index.month
+# Jalali year/month components come straight from the JalaliDatetimeIndex
+j_year = df.index.year.astype(int)
+j_month = df.index.month.astype(int)
 df["jdate_str"] = df["date"].jalali.to_jalali().jalali.strftime("%Y-%m-%d")
 
-# Jalali calendar-aware grouping / resampling (respects 31/30/29-30 day months):
-# ts.to_dataframe() adds df["jdate"] (jalali_datetime); add jdatetime objects for df.jalali.resample()
-df["jdt"] = df["date"].jalali.to_jalali()
-monthly_ohlcv = df.groupby([df.index.year, df.index.month]).agg(
+# Jalali calendar-aware monthly bars (respects 31/30/29-30 day months).
+# Aggregate each column correctly: never sum OHLC prices, only volume/value.
+monthly = df.groupby([j_year, j_month]).agg(
     open=("open", "first"),
     high=("high", "max"),
     low=("low", "min"),
     close=("close", "last"),
     volume=("volume", "sum"),
+    value=("value", "sum"),
 )
-yearly_totals = df.jalali.resample("year")
+monthly.index.names = ["j_year", "j_month"]
+
+# Total traded volume per Jalali year
+yearly_volume = df.groupby(j_year)["volume"].sum()
 ```
 
 CLI equivalents for quick inspection:
