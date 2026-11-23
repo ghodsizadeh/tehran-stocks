@@ -95,9 +95,11 @@ class _BaseResolver:
         )
         exact_symbol = instrument.symbol == normalized_query
 
-        if not exact_symbol and not exact_isin:
-            if not is_isin:
+        if is_isin:
+            if not exact_isin:
                 return None
+        elif not exact_symbol and not exact_isin:
+            return None
 
         board = str(raw_row.get("cgrValCot") or "").strip().upper()
         last_date = raw_row.get("lastDate")
