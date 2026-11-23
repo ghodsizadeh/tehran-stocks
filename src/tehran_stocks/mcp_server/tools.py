@@ -13,7 +13,9 @@ import json
 import math
 import os
 from pathlib import Path
+import re
 from typing import Annotated, Any, Literal
+from urllib.parse import unquote, urlsplit
 
 import anyio.to_thread
 from mcp.server.mcpserver import MCPServer
@@ -24,7 +26,6 @@ from pydantic import Field
 from tehran_stocks.client.base import AsyncTSETMCClient
 from tehran_stocks.exceptions import (
     InstrumentNotFoundError,
-    StorageError,
     TSETMCError,
     TehranStocksError,
 )
@@ -501,12 +502,111 @@ def _local_sqlite_file_path(target: str) -> Path | None:
     return Path(raw)
 
 
+_REDACTED = "***"
+_SENSITIVE_QUERY_KEYS = ("pass", "pwd", "secret", "token", "key", "user", "auth", "cred")
+
+
+def _sanitize_db_label(target: str | None) -> str | None:
+    """Return a non-secret label for a DB target, safe to include in tool results.
+
+    - ``:memory:`` -> ``":memory:"``
+    - local SQLite files (plain paths or ``sqlite[+driver]:///path``) -> file name only
+    - other URIs -> ``scheme://host:port/database`` with userinfo, query, and fragment removed
+    """
+    if target is None:
+        return None
+    raw = str(target).strip()
+    if not raw:
+        return None
+    if raw.lower() == ":memory:":
+        return ":memory:"
+
+    local_file = _local_sqlite_file_path(raw)
+    if local_file is not None:
+        return local_file.name or "sqlite"
+
+    if "://" not in raw:
+        return raw
+
+    scheme, rest = raw.split("://", 1)
+    try:
+        from sqlalchemy.engine import make_url
+
+        url = make_url(raw)
+    except Exception:
+        url = None
+
+    if url is not None:
+        host = url.host or ""
+        if ":" in host:
+            host = f"[{host}]"
+        port = f":{url.port}" if url.port is not None else ""
+        database = f"/{url.database}" if url.database is not None else ""
+        return f"{url.drivername}://{host}{port}{database}"
+
+    if "@" in rest:
+        rest = rest.rsplit("@", 1)[1]
+    rest = rest.split("#", 1)[0].split("?", 1)[0]
+    return f"{scheme}://{rest}"
+
+
+def _db_secrets(target: str | None) -> list[str]:
+    """Collect credential fragments (userinfo, username, password, secret query values)."""
+    raw = str(target or "").strip()
+    if "://" not in raw:
+        return []
+
+    secrets: set[str] = set()
+    rest = raw.split("://", 1)[1]
+    if "@" in rest:
+        userinfo = rest.rsplit("@", 1)[0]
+        user, _, password = userinfo.partition(":")
+        secrets.update({userinfo, user, password, unquote(user), unquote(password)})
+
+    try:
+        parts = urlsplit(raw)
+        secrets.update({parts.username or "", parts.password or "", parts.query or ""})
+    except ValueError:
+        pass
+
+    try:
+        from sqlalchemy.engine import make_url
+
+        url = make_url(raw)
+        secrets.update({url.username or "", url.password or ""})
+        for key, value in url.query.items():
+            if any(token in key.lower() for token in _SENSITIVE_QUERY_KEYS):
+                values = value if isinstance(value, tuple) else (value,)
+                secrets.update(str(v) for v in values)
+    except Exception:
+        pass
+
+    return sorted((s for s in secrets if s), key=len, reverse=True)
+
+
+def _redact_db_message(message: str, target: str | None) -> str:
+    """Scrub the raw DB target and any embedded credentials out of ``message``."""
+    raw = str(target or "").strip()
+    text = message
+    if not raw:
+        return text
+    label = _sanitize_db_label(raw) or _REDACTED
+    if raw != label:
+        text = text.replace(raw, label)
+    for secret in _db_secrets(raw):
+        if re.fullmatch(r"[\w.-]+", secret):
+            text = re.sub(rf"(?<![\w]){re.escape(secret)}(?![\w])", _REDACTED, text)
+        else:
+            text = text.replace(secret, _REDACTED)
+    return text
+
+
 def _open_store_for_query(storage_mod: Any, target: str) -> Any:
     """Open ``target`` for read-only querying without creating a brand-new empty DB file."""
     local_file = _local_sqlite_file_path(target)
     if local_file is not None and not local_file.exists():
         raise ToolError(
-            f"Local database file does not exist: {target}. "
+            f"Local database file does not exist: {_sanitize_db_label(target)}. "
             "Run sync_local_db or `tse db init` first."
         )
     open_fn = storage_mod.open_store
@@ -613,7 +713,7 @@ async def _run_sync_on_store(
 
         stats = await _call_maybe_async(store.stats)
         return {
-            "db_path": config.db_path,
+            "database": _sanitize_db_label(config.db_path),
             "symbols": normalized_symbols or [],
             "sector": cleaned_sector,
             "all_instruments": all_instruments,
@@ -653,7 +753,7 @@ async def _run_readonly_query(
         sliced = rows_list[:limit]
         columns = list(sliced[0].keys()) if sliced else []
         return {
-            "db_path": config.db_path,
+            "database": _sanitize_db_label(config.db_path),
             "row_count": len(sliced),
             "total_rows": len(rows_list),
             "truncated": truncated,
@@ -1433,8 +1533,9 @@ def create_server(
                     all_instruments=all_instruments,
                     include_client_type=include_client_type,
                 )
-            except (TehranStocksError, StorageError, ValueError, OSError) as exc:
-                raise ToolError(str(exc)) from exc
+            except Exception as exc:
+                # Never echo the connection string / credentials back to the model.
+                raise ToolError(_redact_db_message(str(exc), config.db_path)) from None
 
         @server.tool(annotations=_READ_ONLY_LOCAL_ANNOTATIONS)
         async def query_local_db(
@@ -1461,8 +1562,9 @@ def create_server(
             """
             try:
                 return await _run_readonly_query(config, sql=sql, limit=limit)
-            except (TehranStocksError, StorageError, ValueError, OSError) as exc:
-                raise ToolError(str(exc)) from exc
+            except Exception as exc:
+                # Never echo the connection string / credentials back to the model.
+                raise ToolError(_redact_db_message(str(exc), config.db_path)) from None
 
     # ------------------------------------------------------------------
     # 3 MCP Resources

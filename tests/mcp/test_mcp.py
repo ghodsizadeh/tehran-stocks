@@ -28,7 +28,7 @@ from tehran_stocks.mcp_server import (
     resolve_server_config,
     run_server,
 )
-from tehran_stocks.mcp_server.tools import _local_sqlite_file_path
+from tehran_stocks.mcp_server.tools import _local_sqlite_file_path, _sanitize_db_label
 
 FIXTURES_DIR = Path(__file__).resolve().parents[1] / "fixtures"
 KGL_INS_CODE = "35700344742885862"
@@ -664,6 +664,132 @@ async def test_opt_in_db_tools_with_mocked_storage_and_readonly_guard(
         )
         assert bad_query.is_error
         assert "read-only" in bad_query.content[0].text.lower()
+
+
+@pytest.mark.asyncio
+async def test_db_tools_never_leak_connection_string_credentials(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    secret_url = "postgresql+psycopg://alice:s3cr3t_pw@db.example.com:5432/tse?sslmode=require"
+    safe_label = "postgresql+psycopg://db.example.com:5432/tse"
+    transport = _make_tsetmc_transport()
+    state = {"fail_open": False, "fail_query": False}
+    opened: list[str] = []
+
+    class FakeStore:
+        def init_schema(self) -> None:
+            return None
+
+        def query_readonly(self, sql: str) -> list[dict[str, Any]]:
+            if state["fail_query"]:
+                raise StorageError(f"SQLAlchemy storage error: query failed on {secret_url}")
+            return [{"symbol": "کگل", "close": 4110.0}]
+
+        def stats(self) -> dict[str, Any]:
+            return {"instruments": 1, "daily_prices": 15}
+
+        def close(self) -> None:
+            return None
+
+    class FakeAsyncSyncService:
+        def __init__(self, store: FakeStore, client: Any = None) -> None:
+            self.store = store
+
+        async def sync_all(
+            self,
+            symbols: list[str] | None = None,
+            *,
+            sector: str | None = None,
+            all_instruments: bool = True,
+            include_client_types: bool = True,
+        ) -> dict[str, Any]:
+            return {"prices": 15, "client_types": 15 if include_client_types else 0}
+
+    def fake_open_store(target: str, init_schema: bool = True) -> FakeStore:
+        opened.append(target)
+        if state["fail_open"]:
+            raise StorageError(
+                f"SQLAlchemy storage error: connection to {target} failed: FATAL: "
+                f'password authentication failed for user "alice" (password=s3cr3t_pw)'
+            )
+        return FakeStore()
+
+    import tehran_stocks
+
+    fake_storage = SimpleNamespace(
+        open_store=fake_open_store,
+        AsyncSyncService=FakeAsyncSyncService,
+    )
+    monkeypatch.setitem(sys.modules, "tehran_stocks.storage", fake_storage)
+    monkeypatch.setattr(tehran_stocks, "storage", fake_storage, raising=False)
+
+    def assert_clean(text: str) -> None:
+        assert "s3cr3t_pw" not in text
+        assert "alice" not in text
+        assert "sslmode" not in text
+
+    server = create_server(db_path=secret_url, client_transport=transport)
+
+    # Successful tool results expose only a non-secret label.
+    sync_res = await server.call_tool("sync_local_db", {"symbols": ["کگل"]})
+    sync_data = sync_res.structured_content
+    assert sync_data["database"] == safe_label
+    assert "db_path" not in sync_data
+    assert sync_data["sync_result"]["prices"] == 15
+    assert_clean(json.dumps(sync_data, ensure_ascii=False))
+
+    query_res = await server.call_tool(
+        "query_local_db",
+        {"sql": "SELECT symbol, close FROM daily_prices"},
+    )
+    query_data = query_res.structured_content
+    assert query_data["database"] == safe_label
+    assert "db_path" not in query_data
+    assert query_data["rows"][0]["symbol"] == "کگل"
+    assert_clean(json.dumps(query_data, ensure_ascii=False))
+
+    # The real connection string is still what the store receives.
+    assert opened and all(target == secret_url for target in opened)
+
+    async with MCPTestClient(server) as mcp_client:
+        ok = await mcp_client.call_tool("query_local_db", {"sql": "SELECT 1"})
+        assert not ok.is_error
+        assert_clean(ok.content[0].text)
+
+        # Driver/connection errors echoing the URL and username are scrubbed.
+        state["fail_open"] = True
+        for tool_name, tool_args in (
+            ("sync_local_db", {"symbols": ["کگل"]}),
+            ("query_local_db", {"sql": "SELECT 1"}),
+        ):
+            failed = await mcp_client.call_tool(tool_name, tool_args)
+            assert failed.is_error
+            failed_text = failed.content[0].text
+            assert "password authentication failed" in failed_text
+            assert_clean(failed_text)
+
+        state["fail_open"] = False
+        state["fail_query"] = True
+        query_failed = await mcp_client.call_tool("query_local_db", {"sql": "SELECT 1"})
+        assert query_failed.is_error
+        assert "db.example.com" in query_failed.content[0].text
+        assert_clean(query_failed.content[0].text)
+
+    with pytest.raises(ToolError) as exc_info:
+        await server.call_tool("query_local_db", {"sql": "SELECT 1"})
+    assert_clean(str(exc_info.value))
+
+    state["fail_query"] = False
+    state["fail_open"] = True
+    with pytest.raises(ToolError) as sync_exc_info:
+        await server.call_tool("sync_local_db", {"symbols": ["کگل"]})
+    assert_clean(str(sync_exc_info.value))
+
+    # Local file targets are reduced to their file name.
+    assert _sanitize_db_label("/data/market/tse.sqlite") == "tse.sqlite"
+    assert _sanitize_db_label("sqlite+pysqlite:////data/tse.sqlite?mode=ro") == "tse.sqlite"
+    assert _sanitize_db_label(":memory:") == ":memory:"
+    assert _sanitize_db_label(secret_url) == safe_label
 
 
 @pytest.mark.asyncio
