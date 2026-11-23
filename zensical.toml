@@ -1,0 +1,117 @@
+[project]
+site_name = "بورس تهران در پایتون (tehran-stocks)"
+site_description = "راهنمای کاربردی و سناریومحور نسخهٔ ۳ بستهٔ tehran-stocks — کتابخانهٔ پایتون، خط فرمان tse، سرور MCP و مهارت‌های عامل‌های هوش مصنوعی برای بورس تهران"
+site_author = "Mehdi Ghodsizadeh"
+site_url = "https://ghodsizadeh.github.io/tehran-stocks/"
+copyright = "مجوز MIT — پروژهٔ متن‌باز tehran-stocks"
+
+repo_url = "https://github.com/ghodsizadeh/tehran-stocks"
+repo_name = "ghodsizadeh/tehran-stocks"
+edit_uri = "edit/master/docs/"
+
+extra_css = ["stylesheets/extra.css"]
+
+nav = [
+  { "شروع" = "index.md" },
+  { "نصب و راه‌اندازی" = "getting-started/install.md" },
+  { "راهنماهای کاربردی" = [
+    { "بررسی کامل یک سهم در پایتون" = "guides/stock-analysis.md" },
+    { "تحلیل تاریخچهٔ تعدیل‌شده و تقویم جلالی" = "guides/jalali-pandas.md" },
+    { "رصد کل بازار، شاخص‌ها و فیلترنویسی" = "guides/market-screening.md" },
+    { "انبار دادهٔ محلی و تحلیل آفلاین" = "guides/local-database.md" },
+    { "کار سریع در ترمینال با خط فرمان tse" = "guides/cli.md" },
+  ] },
+  { "هوش مصنوعی (MCP و Skills)" = [
+    { "اتصال دستیار هوش مصنوعی با MCP" = "ai/mcp.md" },
+    { "نصب و استفاده از مهارت‌ها (Agent Skills)" = "ai/skills.md" },
+  ] },
+  { "مفاهیم و مهاجرت" = [
+    { "نکات کلیدی بازار بورس تهران" = "concepts/tse-essentials.md" },
+    { "مهاجرت از نسخهٔ ۲ به نسخهٔ ۳" = "concepts/migration-v2-to-v3.md" },
+  ] },
+]
+
+[project.theme]
+language = "fa"
+features = [
+  "content.action.edit",
+  "content.code.annotate",
+  "content.code.copy",
+  "content.code.select",
+  "content.tabs.link",
+  "content.tooltips",
+  "navigation.footer",
+  "navigation.indexes",
+  "navigation.instant",
+  "navigation.instant.prefetch",
+  "navigation.path",
+  "navigation.sections",
+  "navigation.tabs",
+  "navigation.top",
+  "navigation.tracking",
+  "search.highlight",
+  "toc.follow",
+]
+
+[project.theme.icon]
+logo = "lucide/candlestick-chart"
+
+[project.theme.font]
+text = "Vazirmatn"
+code = "JetBrains Mono"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
+scheme = "default"
+primary = "teal"
+accent = "indigo"
+toggle.icon = "lucide/moon"
+toggle.name = "تغییر به حالت تیره"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
+scheme = "slate"
+primary = "teal"
+accent = "indigo"
+toggle.icon = "lucide/sun"
+toggle.name = "تغییر به حالت روشن"
+
+[[project.extra.social]]
+icon = "fontawesome/brands/github"
+link = "https://github.com/ghodsizadeh/tehran-stocks"
+name = "مخزن GitHub"
+
+[[project.extra.social]]
+icon = "fontawesome/brands/python"
+link = "https://pypi.org/project/tehran-stocks/"
+name = "بسته در PyPI"
+
+[project.markdown_extensions]
+abbr = {}
+admonition = {}
+attr_list = {}
+def_list = {}
+footnotes = {}
+md_in_html = {}
+tables = {}
+toc.permalink = true
+pymdownx.betterem = {}
+pymdownx.caret = {}
+pymdownx.details = {}
+pymdownx.emoji.emoji_generator = "zensical.extensions.emoji.to_svg"
+pymdownx.emoji.emoji_index = "zensical.extensions.emoji.twemoji"
+pymdownx.highlight.anchor_linenums = true
+pymdownx.highlight.line_spans = "__span"
+pymdownx.highlight.pygments_lang_class = true
+pymdownx.inlinehilite = {}
+pymdownx.keys = {}
+pymdownx.magiclink = {}
+pymdownx.mark = {}
+pymdownx.smartsymbols = {}
+pymdownx.superfences.custom_fences = [
+  { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" },
+]
+pymdownx.tabbed.alternate_style = true
+pymdownx.tabbed.combine_header_slug = true
+pymdownx.tasklist.custom_checkbox = true
+pymdownx.tilde = {}

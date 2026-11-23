@@ -1,0 +1,72 @@
+/* Persian RTL typography and bidirectional layout polish for Zensical */
+
+:root {
+  --md-text-font: "Vazirmatn", "Tahoma", system-ui, -apple-system, sans-serif;
+  --md-code-font: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+html,
+body {
+  font-family: var(--md-text-font);
+}
+
+.md-typeset {
+  line-height: 1.9;
+  font-size: 0.85rem;
+}
+
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h4 {
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+/* Keep all code blocks, terminal snippets, JSON, SQL, and diagrams strictly LTR */
+.md-typeset pre,
+.md-typeset pre code,
+.md-typeset .highlight,
+.md-typeset .highlighttable,
+.md-typeset .mermaid {
+  direction: ltr;
+  text-align: left;
+}
+
+/* Isolate inline code inside Persian sentences so parentheses and flags stay intact */
+.md-typeset :not(pre) > code {
+  direction: ltr;
+  unicode-bidi: isolate;
+  font-size: 0.88em;
+  padding: 0.08em 0.35em;
+}
+
+/* Ensure code block copy/select buttons sit cleanly on the right of LTR code blocks */
+[dir="rtl"] .md-typeset .md-code__nav {
+  right: 0.5rem;
+  left: auto;
+}
+
+/* Ensure code block titles remain readable */
+.md-typeset .highlight > span.filename {
+  direction: ltr;
+  text-align: left;
+}
+
+/* Clean RTL table alignment */
+[dir="rtl"] .md-typeset table:not([class]) th,
+[dir="rtl"] .md-typeset table:not([class]) td {
+  text-align: right;
+}
+
+/* Keep technical badge/card grids balanced in RTL */
+.md-typeset .grid.cards > ul > li,
+.md-typeset .grid.cards > ol > li {
+  border-radius: 0.5rem;
+}
+
+/* Keep keyboard shortcuts clean */
+.md-typeset kbd {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
