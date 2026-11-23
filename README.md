@@ -80,11 +80,17 @@ bars = ts.history("کگل", days=30, adjusted=True)
 df = ts.to_dataframe(bars, jalali=True, index_by_date=True)
 print(df[["date", "jdate", "open", "high", "low", "close", "volume"]].tail())
 
-# Access Jalali index components or convert/resample with .jalali
-df["j_year"] = df.index.year
-df["jdt"] = df["date"].jalali.to_jalali()
-df["jdate_str"] = df["jdt"].jalali.strftime("%Y-%m-%d")
-monthly_totals = df.jalali.resample("month")
+# Access Jalali index components, format dates, and aggregate monthly OHLCV
+df["j_year"] = df.index.year.astype(int)
+df["jdate_str"] = df["date"].jalali.to_jalali().jalali.strftime("%Y-%m-%d")
+monthly_ohlcv = df.groupby([df.index.year.astype(int), df.index.month.astype(int)]).agg(
+    open=("open", "first"),
+    high=("high", "max"),
+    low=("low", "min"),
+    close=("close", "last"),
+    volume=("volume", "sum"),
+    value=("value", "sum"),
+)
 
 # 3. Individual vs. institutional (حقیقی / حقوقی) flow & order book
 ct = ts.client_type_history("کگل", days=5)[-1]
@@ -348,8 +354,9 @@ uvx --from tehran-stocks tse skill path
 # Install into detected or explicit agent directories
 # --target: auto | claude | cursor | codex | antigravity | agents
 # --scope:  project | global
+# Existing skill installs are preserved by default; pass --overwrite to replace them
 uvx --from tehran-stocks tse skill install --target auto --scope project
-uvx --from tehran-stocks tse skill install --target claude --scope global
+uvx --from tehran-stocks tse skill install --target claude --scope global --overwrite
 ```
 
 ---
