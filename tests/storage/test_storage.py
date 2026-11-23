@@ -16,7 +16,7 @@ import httpx2
 import pytest
 
 from tehran_stocks.client import AsyncClient
-from tehran_stocks.exceptions import StorageError
+from tehran_stocks.exceptions import StorageError, TSETMCError
 from tehran_stocks.storage import (
     AsyncSyncService,
     SQLAlchemyStore,
@@ -679,3 +679,82 @@ async def test_async_sync_service_concurrency_and_error_handling(tmp_path: Path)
 
             with pytest.raises(StorageError):
                 await async_sync.sync_prices(["MISSING_SYM"], fail_fast=True)
+
+
+@pytest.mark.asyncio
+async def test_async_sync_service_fail_fast_cancels_and_awaits_sibling_workers(
+    tmp_path: Path,
+) -> None:
+    daily_rows = _load_fixture("daily_history.json")["closingPriceDaily"]
+    sym2_started = asyncio.Event()
+    sym2_release = asyncio.Event()
+    sym2_cancelled = False
+    sym2_finished = False
+    sym2_returned = False
+
+    async def handler(request: httpx2.Request) -> httpx2.Response:
+        nonlocal sym2_cancelled, sym2_finished, sym2_returned
+        path = unquote(request.url.path)
+
+        if path.startswith(f"/api/ClosingPrice/GetClosingPriceDailyList/{BEMAN_INS_CODE}/"):
+            sym2_started.set()
+            try:
+                await sym2_release.wait()
+                sym2_returned = True
+                return httpx2.Response(
+                    200,
+                    json={
+                        "closingPriceDaily": [
+                            {**row, "insCode": BEMAN_INS_CODE} for row in daily_rows
+                        ]
+                    },
+                )
+            except asyncio.CancelledError:
+                sym2_cancelled = True
+                raise
+            finally:
+                sym2_finished = True
+
+        if path.startswith(f"/api/ClosingPrice/GetClosingPriceDailyList/{KGL_INS_CODE}/"):
+            await sym2_started.wait()
+            return httpx2.Response(500, json={"error": "upstream failure"})
+
+        return httpx2.Response(404, json={"error": f"Unhandled path: {path}"})
+
+    transport = httpx2.MockTransport(handler)
+    with open_store(tmp_path / "fail_fast_cancel.db") as store:
+        store.upsert_instruments(
+            [
+                Instrument(ins_code=KGL_INS_CODE, symbol="کگل", name="گل گهر"),
+                Instrument(ins_code=BEMAN_INS_CODE, symbol="بمان", name="بازده مانا"),
+            ]
+        )
+
+        async with AsyncClient(
+            transport=transport,
+            max_concurrency=2,
+            max_retries=0,
+            retry_backoff=0.0,
+        ) as client:
+            async_sync = AsyncSyncService(store, client=client, max_concurrency=2)
+            with pytest.raises(TSETMCError):
+                await async_sync.sync_prices(
+                    ["کگل", "بمان"],
+                    include_adjustments=False,
+                    fail_fast=True,
+                )
+
+            # Sibling worker 2 must be cancelled and awaited before sync_prices returns.
+            assert sym2_started.is_set()
+            assert sym2_cancelled is True
+            assert sym2_finished is True
+            assert sym2_returned is False
+            assert store.get_prices(BEMAN_INS_CODE) == []
+            assert store.stats()["daily_prices"] == 0
+
+            # Unblocking the event afterward must not trigger any late writes.
+            sym2_release.set()
+            await asyncio.sleep(0)
+            assert sym2_returned is False
+            assert store.get_prices(BEMAN_INS_CODE) == []
+            assert store.stats()["daily_prices"] == 0

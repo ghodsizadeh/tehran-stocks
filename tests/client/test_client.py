@@ -526,7 +526,30 @@ def test_symbol_resolution_normalization_priority_cache_and_errors() -> None:
                     "zTitad": 500000000000,
                 },
             ]
-        }
+        },
+        "/api/Instrument/GetInstrumentSearch/IRO1GOLG0005": {
+            "instrumentSearch": [
+                {
+                    "insCode": "99999999999999999",
+                    "lVal18AFC": "كگلح",
+                    "lVal30": "ح . معدنی گل گهر",
+                    "cIsin": "IRO1GOLG0009",
+                    "flow": 1,
+                    "cgrValCot": "N1",
+                    "lastDate": 1,
+                },
+                {
+                    "insCode": KGL_INS_CODE,
+                    "lVal18AFC": "كگل",
+                    "lVal30": "معدني و صنعتي گل گهر",
+                    "cIsin": "IRO1GOLG0005",
+                    "instrumentID": "IRO1GOLG0001",
+                    "flow": 1,
+                    "cgrValCot": "N1",
+                    "lastDate": 1,
+                },
+            ]
+        },
     }
     transport = _make_tsetmc_router(calls, extra_routes=extra)
 
@@ -542,8 +565,9 @@ def test_symbol_resolution_normalization_priority_cache_and_errors() -> None:
         assert client.resolve("۳۵۷۰۰۳۴۴۷۴۲۸۸۵۸۶۲") == KGL_INS_CODE
         assert len([c for c in calls if "/GetInstrumentSearch/" in c]) == 1
 
-        # ISIN resolution
+        # ISIN resolution (exact ISIN match + case-insensitive cache hit)
         assert client.resolve("IRO1GOLG0005") == KGL_INS_CODE
+        assert client.resolve("iro1golg0005") == KGL_INS_CODE
 
         # Active equity board (flow=1) wins over derivative/inactive board (flow=3)
         assert client.resolve("فولاد") == "46348559193224090"
@@ -557,6 +581,81 @@ def test_symbol_resolution_normalization_priority_cache_and_errors() -> None:
             client.resolve("")
         with pytest.raises(InstrumentNotFoundError):
             client.resolve("0")
+
+
+def test_isin_resolution_rejects_unrelated_search_rows_sync() -> None:
+    extra = {
+        "/api/Instrument/GetInstrumentSearch/IRO1MISM0002": {
+            "instrumentSearch": [
+                {
+                    "insCode": KGL_INS_CODE,
+                    "lVal18AFC": "كگل",
+                    "lVal30": "معدني و صنعتي گل گهر",
+                    "cIsin": "IRO1GOLG0005",
+                    "instrumentID": "IRO1GOLG0001",
+                    "flow": 1,
+                    "cgrValCot": "N1",
+                    "lastDate": 1,
+                }
+            ]
+        }
+    }
+    transport = _make_tsetmc_router(extra_routes=extra)
+
+    with Client(transport=transport, retry_backoff=0.0) as client:
+        assert len(client.instruments.search("IRO1UNKN0001")) > 0
+        with pytest.raises(InstrumentNotFoundError):
+            client.resolve("IRO1UNKN0001")
+        with pytest.raises(InstrumentNotFoundError):
+            client.resolve("IRO1MISM0002")
+
+
+@pytest.mark.asyncio
+async def test_isin_resolution_rejects_unrelated_search_rows_async() -> None:
+    extra = {
+        "/api/Instrument/GetInstrumentSearch/IRO1GOLG0005": {
+            "instrumentSearch": [
+                {
+                    "insCode": KGL_INS_CODE,
+                    "lVal18AFC": "كگل",
+                    "lVal30": "معدني و صنعتي گل گهر",
+                    "cIsin": "IRO1GOLG0005",
+                    "flow": 1,
+                    "cgrValCot": "N1",
+                    "lastDate": 1,
+                }
+            ]
+        },
+        "/api/Instrument/GetInstrumentSearch/IRO1MISM0002": {
+            "instrumentSearch": [
+                {
+                    "insCode": KGL_INS_CODE,
+                    "lVal18AFC": "كگل",
+                    "lVal30": "معدني و صنعتي گل گهر",
+                    "cIsin": "IRO1GOLG0005",
+                    "instrumentID": "IRO1GOLG0001",
+                    "flow": 1,
+                    "cgrValCot": "N1",
+                    "lastDate": 1,
+                }
+            ]
+        },
+    }
+    base_router = _make_tsetmc_router(extra_routes=extra)
+
+    async def async_handler(request: httpx2.Request) -> httpx2.Response:
+        return base_router.handler(request)
+
+    async with AsyncClient(
+        transport=httpx2.MockTransport(async_handler),
+        retry_backoff=0.0,
+    ) as client:
+        assert await client.resolve("IRO1GOLG0005") == KGL_INS_CODE
+        assert len(await client.instruments.search("IRO1UNKN0001")) > 0
+        with pytest.raises(InstrumentNotFoundError):
+            await client.resolve("IRO1UNKN0001")
+        with pytest.raises(InstrumentNotFoundError):
+            await client.resolve("IRO1MISM0002")
 
 
 def test_history_adjusted_scales_bars_before_corporate_action() -> None:
