@@ -1,0 +1,136 @@
+{
+  "shareHolder": [
+    {
+      "shareHolderID": 0,
+      "shareHolderName": "شركت گروه .م .سرمايه گذاري اميد-س .ع -",
+      "cIsin": "IRO1GOLG0005",
+      "dEven": 0,
+      "numberOfShares": 222385914241.0,
+      "perOfShares": 33.952,
+      "change": 1,
+      "changeAmount": 0.0,
+      "shareHolderShareID": 1414331
+    },
+    {
+      "shareHolderID": 0,
+      "shareHolderName": "شركت سرمايه گذاري توسعه معادن وفلزات -سهامي عام",
+      "cIsin": "IRO1GOLG0005",
+      "dEven": 0,
+      "numberOfShares": 147670449445.0,
+      "perOfShares": 22.545,
+      "change": 1,
+      "changeAmount": 0.0,
+      "shareHolderShareID": 1417198
+    },
+    {
+      "shareHolderID": 0,
+      "shareHolderName": "شركت فولادمباركه اصفهان",
+      "cIsin": "IRO1GOLG0005",
+      "dEven": 0,
+      "numberOfShares": 42787232028.0,
+      "perOfShares": 6.532,
+      "change": 1,
+      "changeAmount": 0.0,
+      "shareHolderShareID": 1415328
+    },
+    {
+      "shareHolderID": 0,
+      "shareHolderName": "شركت واسط مالي فروردين بامسئوليت محدود",
+      "cIsin": "IRO1GOLG0005",
+      "dEven": 0,
+      "numberOfShares": 28006309780.0,
+      "perOfShares": 4.275,
+      "change": 1,
+      "changeAmount": 0.0,
+      "shareHolderShareID": 1416080
+    },
+    {
+      "shareHolderID": 0,
+      "shareHolderName": "شركت واسط مالي ارديبهشت چهارم -ب .م .م -",
+      "cIsin": "IRO1GOLG0005",
+      "dEven": 0,
+      "numberOfShares": 12463494456.0,
+      "perOfShares": 1.902,
+      "change": 1,
+      "changeAmount": 0.0,
+      "shareHolderShareID": 1417949
+    },
+    {
+      "shareHolderID": 0,
+      "shareHolderName": "شركت سرمايه گذاري سپه -سهامي عام -",
+      "cIsin": "IRO1GOLG0005",
+      "dEven": 0,
+      "numberOfShares": 9771978260.0,
+      "perOfShares": 1.491,
+      "change": 1,
+      "changeAmount": 0.0,
+      "shareHolderShareID": 1415694
+    },
+    {
+      "shareHolderID": 0,
+      "shareHolderName": "شركت .س .صندوق بازنشستگي كشوري -سهامي عام -",
+      "cIsin": "IRO1GOLG0005",
+      "dEven": 0,
+      "numberOfShares": 9596576523.0,
+      "perOfShares": 1.465,
+      "change": 1,
+      "changeAmount": 0.0,
+      "shareHolderShareID": 1417948
+    },
+    {
+      "shareHolderID": 0,
+      "shareHolderName": "شركت گروه توسعه مالي مهرآيندگان -سهامي عام -",
+      "cIsin": "IRO1GOLG0005",
+      "dEven": 0,
+      "numberOfShares": 9584443469.0,
+      "perOfShares": 1.463,
+      "change": 1,
+      "changeAmount": 0.0,
+      "shareHolderShareID": 1417865
+    },
+    {
+      "shareHolderID": 0,
+      "shareHolderName": "بانك سپه",
+      "cIsin": "IRO1GOLG0005",
+      "dEven": 0,
+      "numberOfShares": 9285561176.0,
+      "perOfShares": 1.417,
+      "change": 1,
+      "changeAmount": 0.0,
+      "shareHolderShareID": 1414323
+    },
+    {
+      "shareHolderID": 0,
+      "shareHolderName": "شركت توسعه ومديريت سرمايه صبا-سهامي خاص -",
+      "cIsin": "IRO1GOLG0005",
+      "dEven": 0,
+      "numberOfShares": 7961669741.0,
+      "perOfShares": 1.215,
+      "change": 1,
+      "changeAmount": 0.0,
+      "shareHolderShareID": 1417921
+    },
+    {
+      "shareHolderID": 0,
+      "shareHolderName": "PRXسبد-شرك48730--بان00015-",
+      "cIsin": "IRO1GOLG0005",
+      "dEven": 0,
+      "numberOfShares": 7496581042.0,
+      "perOfShares": 1.144,
+      "change": 1,
+      "changeAmount": 0.0,
+      "shareHolderShareID": 1418661
+    },
+    {
+      "shareHolderID": 0,
+      "shareHolderName": "شركت سرمايه گذاري سامان ايرانيان -سهامي خاص -",
+      "cIsin": "IRO1GOLG0005",
+      "dEven": 0,
+      "numberOfShares": 7425546834.0,
+      "perOfShares": 1.133,
+      "change": 1,
+      "changeAmount": 0.0,
+      "shareHolderShareID": 1414565
+    }
+  ]
+}

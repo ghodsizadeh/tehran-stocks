@@ -1,0 +1,35 @@
+{
+  "instrumentIdentity": {
+    "sector": {
+      "dEven": 0,
+      "cSecVal": "13 ",
+      "lSecVal": "استخراج كانه هاي فلزي"
+    },
+    "subSector": {
+      "dEven": 0,
+      "cSecVal": null,
+      "cSoSecVal": 1310,
+      "lSoSecVal": "استخراج آهن"
+    },
+    "cValMne": "GOLG1",
+    "lVal18": "Gol-E-Gohar.",
+    "cSocCSAC": "GOLG",
+    "lSoc30": "معدني و صنعتي گل گهر",
+    "yMarNSC": "NO",
+    "yVal": "300",
+    "insCode": "0",
+    "lVal30": "معدني و صنعتي گل گهر",
+    "lVal18AFC": "كگل",
+    "flow": 0,
+    "cIsin": "IRO1GOLG0005",
+    "zTitad": 0.0,
+    "baseVol": 0,
+    "instrumentID": "IRO1GOLG0001",
+    "cgrValCot": "N1",
+    "cComVal": "1",
+    "lastDate": 0,
+    "sourceID": 0,
+    "flowTitle": "",
+    "cgrValCotTitle": "بازار اول (تابلوی اصلی) بورس"
+  }
+}

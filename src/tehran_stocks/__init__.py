@@ -1,39 +1,81 @@
-import os
-import sys
+"""tehran-stocks v3.0 — Modern Python SDK for the Tehran Stock Exchange (TSETMC)."""
 
-from sqlalchemy import inspect
+from __future__ import annotations
 
-import tehran_stocks.config as db
-from tehran_stocks.download import (
-    get_all_price,
-    get_stock_detail,
-    get_stock_groups,
-    get_stock_ids,
-    update_group,
-    update_stock_price,
+from tehran_stocks import exceptions, types, utils
+from tehran_stocks import api, client
+from tehran_stocks.api import (
+    client_type,
+    client_type_history,
+    codal,
+    etf,
+    history,
+    indices,
+    market_overview,
+    order_book,
+    quote,
+    search,
+    sectors,
+    shareholders,
 )
-from tehran_stocks.models import StockPrice, Stocks, get_asset
+from tehran_stocks.client import (
+    AsyncClient,
+    AsyncTSETMCClient,
+    Client,
+    TSETMCClient,
+)
+from tehran_stocks.exceptions import (
+    InstrumentNotFoundError,
+    RateLimitError,
+    StorageError,
+    TSETMCError,
+    TehranStocksError,
+)
+from tehran_stocks.utils import (
+    adjust_prices,
+    gregorian_to_jalali,
+    int_to_date,
+    jalali_to_gregorian,
+    normalize_persian,
+    parse_tsetmc_time,
+    to_dataframe,
+)
 
-from .initializer import init_db, fill_db
+__version__ = "3.0.0"
 
-
-def db_is_empty():
-    try:
-        return not inspect(db.engine).has_table("stocks")
-    except Exception:
-        return True
-
-
-def should_fill_db():
-    if os.environ.get("TEHRAN_STOCKS_AUTO_FILL", "1") != "1":
-        return False
-    if os.environ.get("PYTEST_CURRENT_TEST"):
-        return False
-    return sys.stdin.isatty()
-
-
-if db_is_empty():
-    print("No database founded.")
-    init_db()
-    if should_fill_db():
-        fill_db()
+__all__ = [
+    "__version__",
+    "AsyncClient",
+    "AsyncTSETMCClient",
+    "Client",
+    "InstrumentNotFoundError",
+    "RateLimitError",
+    "StorageError",
+    "TSETMCClient",
+    "TSETMCError",
+    "TehranStocksError",
+    "adjust_prices",
+    "api",
+    "client",
+    "client_type",
+    "client_type_history",
+    "codal",
+    "etf",
+    "exceptions",
+    "gregorian_to_jalali",
+    "history",
+    "indices",
+    "int_to_date",
+    "jalali_to_gregorian",
+    "market_overview",
+    "normalize_persian",
+    "order_book",
+    "parse_tsetmc_time",
+    "quote",
+    "search",
+    "sectors",
+    "shareholders",
+    "to_dataframe",
+    "types",
+    "utils",
+]

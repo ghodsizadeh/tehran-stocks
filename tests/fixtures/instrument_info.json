@@ -1,0 +1,56 @@
+{
+  "instrumentInfo": {
+    "eps": {
+      "epsValue": null,
+      "estimatedEPS": "275",
+      "sectorPE": 14.67,
+      "psr": 2324.4355
+    },
+    "sector": {
+      "dEven": 0,
+      "cSecVal": "13 ",
+      "lSecVal": "استخراج كانه هاي فلزي"
+    },
+    "staticThreshold": {
+      "insCode": null,
+      "dEven": 0,
+      "hEven": 0,
+      "psGelStaMax": 4120.0,
+      "psGelStaMin": 3880.0
+    },
+    "minWeek": 3880.0,
+    "maxWeek": 4150.0,
+    "minYear": 1862.0,
+    "maxYear": 4230.0,
+    "qTotTran5JAvg": 760290163.0,
+    "kAjCapValCpsIdx": "23",
+    "dEven": 20261123,
+    "topInst": 0,
+    "faraDesc": "",
+    "contractSize": 0,
+    "nav": 0.0,
+    "underSupervision": 0,
+    "etfIssuedUnit": 0.0,
+    "etfUnitDeven": 0,
+    "cValMne": null,
+    "lVal18": "Gol-E-Gohar.",
+    "cSocCSAC": null,
+    "lSoc30": null,
+    "yMarNSC": null,
+    "yVal": "300",
+    "insCode": "35700344742885862",
+    "lVal30": "معدني و صنعتي گل گهر",
+    "lVal18AFC": "كگل",
+    "flow": 1,
+    "cIsin": "IRO1GOLG0005",
+    "zTitad": 655000000000.0,
+    "baseVol": 1,
+    "instrumentID": "IRO1GOLG0001",
+    "cgrValCot": "N1",
+    "cComVal": "1",
+    "lastDate": 0,
+    "sourceID": 1,
+    "flowTitle": "بازار بورس",
+    "cgrValCotTitle": "بازار اول (تابلوی اصلی) بورس"
+  }
+}

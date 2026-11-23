@@ -1,7 +1,0 @@
-database:
-  engine: sqlite
-  host: None
-  port: None
-  user: None
-  password: None
-  database: None

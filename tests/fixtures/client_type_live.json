@@ -1,0 +1,14 @@
+{
+  "clientType": {
+    "buy_I_Volume": 168040481.0,
+    "buy_N_Volume": 273068024.0,
+    "buy_DDD_Volume": 0.0,
+    "buy_CountI": 628,
+    "buy_CountN": 22,
+    "buy_CountDDD": 0,
+    "sell_I_Volume": 179544124.0,
+    "sell_N_Volume": 261564381.0,
+    "sell_CountI": 892,
+    "sell_CountN": 21
+  }
+}
