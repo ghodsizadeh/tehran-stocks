@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-from tehran_stocks import exceptions, types, utils
-from tehran_stocks import api, client
+from tehran_stocks import api, client, exceptions, storage, types, utils
 from tehran_stocks.api import (
     client_type,
     client_type_history,
@@ -31,6 +30,16 @@ from tehran_stocks.exceptions import (
     TSETMCError,
     TehranStocksError,
 )
+from tehran_stocks.storage import (
+    AsyncSyncService,
+    SQLAlchemyStore,
+    SQLiteStore,
+    StorageBackend,
+    SyncProgress,
+    SyncResult,
+    SyncService,
+    open_store,
+)
 from tehran_stocks.utils import (
     adjust_prices,
     gregorian_to_jalali,
@@ -46,11 +55,18 @@ __version__ = "3.0.0"
 __all__ = [
     "__version__",
     "AsyncClient",
+    "AsyncSyncService",
     "AsyncTSETMCClient",
     "Client",
     "InstrumentNotFoundError",
     "RateLimitError",
+    "SQLAlchemyStore",
+    "SQLiteStore",
+    "StorageBackend",
     "StorageError",
+    "SyncProgress",
+    "SyncResult",
+    "SyncService",
     "TSETMCClient",
     "TSETMCError",
     "TehranStocksError",
@@ -69,12 +85,14 @@ __all__ = [
     "jalali_to_gregorian",
     "market_overview",
     "normalize_persian",
+    "open_store",
     "order_book",
     "parse_tsetmc_time",
     "quote",
     "search",
     "sectors",
     "shareholders",
+    "storage",
     "to_dataframe",
     "types",
     "utils",
