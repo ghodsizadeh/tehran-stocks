@@ -1,0 +1,164 @@
+{
+  "instrumentStatistic": [
+    {
+      "insCode": 0,
+      "dataType": 1,
+      "dEven": 0,
+      "dataValue": "2646998822792",
+      "dataTypeDesc": "میانگین ارزش معاملات در 3 ماه گذشته ",
+      "partitionCode": 5
+    },
+    {
+      "insCode": 0,
+      "dataType": 2,
+      "dEven": 0,
+      "dataValue": "1217228904438",
+      "dataTypeDesc": "میانگین ارزش معاملات در 12 ماه گذشته ",
+      "partitionCode": 5
+    },
+    {
+      "insCode": 0,
+      "dataType": 3,
+      "dEven": 0,
+      "dataValue": "84",
+      "dataTypeDesc": "رتبه ارزش معاملات در 3 ماه گذشته ",
+      "partitionCode": 5
+    },
+    {
+      "insCode": 0,
+      "dataType": 4,
+      "dEven": 0,
+      "dataValue": "101",
+      "dataTypeDesc": "رتبه ارزش معاملات در 12 ماه گذشته ",
+      "partitionCode": 5
+    },
+    {
+      "insCode": 0,
+      "dataType": 5,
+      "dEven": 0,
+      "dataValue": "777712058",
+      "dataTypeDesc": "میانگین حجم معاملات در 3 ماه گذشته ",
+      "partitionCode": 7
+    },
+    {
+      "insCode": 0,
+      "dataType": 6,
+      "dEven": 0,
+      "dataValue": "419243038",
+      "dataTypeDesc": "میانگین حجم معاملات در 12 ماه گذشته ",
+      "partitionCode": 7
+    },
+    {
+      "insCode": 0,
+      "dataType": 7,
+      "dEven": 0,
+      "dataValue": "14",
+      "dataTypeDesc": "رتبه حجم معاملات در 3 ماه گذشته ",
+      "partitionCode": 7
+    },
+    {
+      "insCode": 0,
+      "dataType": 8,
+      "dEven": 0,
+      "dataValue": "20",
+      "dataTypeDesc": "رتبه حجم معاملات در 12 ماه گذشته ",
+      "partitionCode": 7
+    },
+    {
+      "insCode": 0,
+      "dataType": 9,
+      "dEven": 0,
+      "dataValue": "6818",
+      "dataTypeDesc": "میانگین دفعات معاملات روزانه در 3 ماه گذشته",
+      "partitionCode": 4
+    },
+    {
+      "insCode": 0,
+      "dataType": 10,
+      "dEven": 0,
+      "dataValue": "3582",
+      "dataTypeDesc": "میانگین دفعات معاملات روزانه در 12 ماه گذشته",
+      "partitionCode": 4
+    },
+    {
+      "insCode": 0,
+      "dataType": 11,
+      "dEven": 0,
+      "dataValue": "63",
+      "dataTypeDesc": "رتبه دفعات معاملات روزانه در 3 ماه گذشته",
+      "partitionCode": 4
+    },
+    {
+      "insCode": 0,
+      "dataType": 12,
+      "dEven": 0,
+      "dataValue": "76",
+      "dataTypeDesc": "رتبه دفعات معاملات روزانه در 12 ماه گذشته",
+      "partitionCode": 4
+    },
+    {
+      "insCode": 0,
+      "dataType": 13,
+      "dEven": 0,
+      "dataValue": "3996.59",
+      "dataTypeDesc": "قیمت میانگین وزنی آخرین روز - بدون دخالت حجم مبنا",
+      "partitionCode": 8
+    },
+    {
+      "insCode": 0,
+      "dataType": 14,
+      "dEven": 0,
+      "dataValue": "4000.00",
+      "dataTypeDesc": "قیمت میانگین وزنی آخرین روز - با دخالت حجم مبنا",
+      "partitionCode": 8
+    },
+    {
+      "insCode": 0,
+      "dataType": 15,
+      "dEven": 0,
+      "dataValue": "1694823471830.00",
+      "dataTypeDesc": "ارزش معاملات آخرین روز",
+      "partitionCode": 5
+    },
+    {
+      "insCode": 0,
+      "dataType": 16,
+      "dEven": 0,
+      "dataValue": "424066991",
+      "dataTypeDesc": "حجم معاملات آخرین روز",
+      "partitionCode": 7
+    },
+    {
+      "insCode": 0,
+      "dataType": 17,
+      "dEven": 0,
+      "dataValue": "5074",
+      "dataTypeDesc": "دفعات معاملات در آخرین روز",
+      "partitionCode": 4
+    },
+    {
+      "insCode": 0,
+      "dataType": 18,
+      "dEven": 0,
+      "dataValue": "24",
+      "dataTypeDesc": "تعداد روزهای منفی در 3 ماه گذشته",
+      "partitionCode": 1
+    },
+    {
+      "insCode": 0,
+      "dataType": 19,
+      "dEven": 0,
+      "dataValue": "79",
+      "dataTypeDesc": "تعداد روزهای منفی در 12 ماه گذشته",
+      "partitionCode": 1
+    },
+    {
+      "insCode": 0,
+      "dataType": 20,
+      "dEven": 0,
+      "dataValue": "36.00",
+      "dataTypeDesc": "درصد روزهای منفی در 3 ماه گذشته",
+      "partitionCode": 1
+    }
+  ]
+}

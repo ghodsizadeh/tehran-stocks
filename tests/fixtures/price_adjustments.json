@@ -1,0 +1,124 @@
+{
+  "priceAdjust": [
+    {
+      "insCode": 35700344742885862,
+      "dEven": 20260524,
+      "pClosing": 1781.0,
+      "pClosingNotAdjusted": 1971.0,
+      "corporateTypeCode": null,
+      "instrument": null
+    },
+    {
+      "insCode": 35700344742885862,
+      "dEven": 20250716,
+      "pClosing": 2295.0,
+      "pClosingNotAdjusted": 2605.0,
+      "corporateTypeCode": null,
+      "instrument": null
+    },
+    {
+      "insCode": 35700344742885862,
+      "dEven": 20240630,
+      "pClosing": 3642.0,
+      "pClosingNotAdjusted": 4022.0,
+      "corporateTypeCode": null,
+      "instrument": null
+    },
+    {
+      "insCode": 35700344742885862,
+      "dEven": 20230703,
+      "pClosing": 7020.0,
+      "pClosingNotAdjusted": 7410.0,
+      "corporateTypeCode": null,
+      "instrument": null
+    },
+    {
+      "insCode": 35700344742885862,
+      "dEven": 20220712,
+      "pClosing": 20880.0,
+      "pClosingNotAdjusted": 22150.0,
+      "corporateTypeCode": null,
+      "instrument": null
+    },
+    {
+      "insCode": 35700344742885862,
+      "dEven": 20210707,
+      "pClosing": 18770.0,
+      "pClosingNotAdjusted": 20070.0,
+      "corporateTypeCode": null,
+      "instrument": null
+    },
+    {
+      "insCode": 35700344742885862,
+      "dEven": 20200708,
+      "pClosing": 16350.0,
+      "pClosingNotAdjusted": 17250.0,
+      "corporateTypeCode": null,
+      "instrument": null
+    },
+    {
+      "insCode": 35700344742885862,
+      "dEven": 20190708,
+      "pClosing": 7023.0,
+      "pClosingNotAdjusted": 5242.0,
+      "corporateTypeCode": null,
+      "instrument": null
+    },
+    {
+      "insCode": 35700344742885862,
+      "dEven": 20190707,
+      "pClosing": 5242.0,
+      "pClosingNotAdjusted": 6656.0,
+      "corporateTypeCode": null,
+      "instrument": null
+    },
+    {
+      "insCode": 35700344742885862,
+      "dEven": 20190706,
+      "pClosing": 6656.0,
+      "pClosingNotAdjusted": 7736.0,
+      "corporateTypeCode": null,
+      "instrument": null
+    },
+    {
+      "insCode": 35700344742885862,
+      "dEven": 20190703,
+      "pClosing": 7736.0,
+      "pClosingNotAdjusted": 7833.0,
+      "corporateTypeCode": null,
+      "instrument": null
+    },
+    {
+      "insCode": 35700344742885862,
+      "dEven": 20190414,
+      "pClosing": 6052.0,
+      "pClosingNotAdjusted": 7736.0,
+      "corporateTypeCode": null,
+      "instrument": null
+    },
+    {
+      "insCode": 35700344742885862,
+      "dEven": 20180703,
+      "pClosing": 4663.0,
+      "pClosingNotAdjusted": 2667.0,
+      "corporateTypeCode": null,
+      "instrument": null
+    },
+    {
+      "insCode": 35700344742885862,
+      "dEven": 20180703,
+      "pClosing": 2667.0,
+      "pClosingNotAdjusted": 3000.0,
+      "corporateTypeCode": null,
+      "instrument": null
+    },
+    {
+      "insCode": 35700344742885862,
+      "dEven": 20180702,
+      "pClosing": 3000.0,
+      "pClosingNotAdjusted": 3650.0,
+      "corporateTypeCode": null,
+      "instrument": null
+    }
+  ]
+}
