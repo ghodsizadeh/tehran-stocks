@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Iterator, Mapping, Sequence
+from contextlib import contextmanager
 from dataclasses import dataclass
 from enum import Enum
 import importlib
 import math
 from pathlib import Path
+import re
 from typing import Annotated, Any, TypeVar
+from urllib.parse import unquote, urlsplit
 
 import httpx2
 from rich.progress import (
@@ -29,6 +32,7 @@ from tehran_stocks.cli.formatters import (
     OutputFormat,
     cli_error_boundary,
     emit_json,
+    exit_code_for_error,
     fail_with_error,
     fmt_float,
     fmt_int,
@@ -230,6 +234,108 @@ def _is_local_sqlite_file(target: str) -> Path | None:
     return Path(raw)
 
 
+_REDACTED = "***"
+_SENSITIVE_QUERY_KEYS = ("pass", "pwd", "secret", "token", "key", "user", "auth", "cred")
+
+
+def _sanitize_db_target(db: str) -> str:
+    """Return a display-safe DB target with URI credentials, query string, and fragment removed.
+
+    ``postgresql+psycopg://user:pass@host:5432/db?sslmode=require`` becomes
+    ``postgresql+psycopg://host:5432/db``. Plain local paths and ``:memory:`` are returned unchanged.
+    """
+    raw = str(db).strip()
+    if "://" not in raw:
+        return raw
+
+    scheme = raw.split("://", 1)[0]
+    try:
+        from sqlalchemy.engine import make_url
+
+        url = make_url(raw)
+    except Exception:
+        url = None
+
+    if url is not None:
+        host = url.host or ""
+        if ":" in host:
+            host = f"[{host}]"
+        port = f":{url.port}" if url.port is not None else ""
+        database = f"/{url.database}" if url.database is not None else ""
+        return f"{url.drivername}://{host}{port}{database}"
+
+    # Fallback for URIs SQLAlchemy cannot parse: drop everything up to the last '@'
+    # (userinfo may itself contain '/', '?', or ':'), then the query string and fragment.
+    rest = raw.split("://", 1)[1]
+    if "@" in rest:
+        rest = rest.rsplit("@", 1)[1]
+    rest = rest.split("#", 1)[0].split("?", 1)[0]
+    return f"{scheme}://{rest}"
+
+
+def _db_secrets(db: str) -> list[str]:
+    """Collect credential fragments (userinfo, username, password) embedded in a DB URI."""
+    raw = str(db).strip()
+    if "://" not in raw:
+        return []
+
+    secrets: set[str] = set()
+    rest = raw.split("://", 1)[1]
+    if "@" in rest:
+        userinfo = rest.rsplit("@", 1)[0]
+        secrets.add(userinfo)
+        user, _, password = userinfo.partition(":")
+        secrets.update({user, password, unquote(user), unquote(password)})
+
+    try:
+        parts = urlsplit(raw)
+        secrets.update({parts.username or "", parts.password or ""})
+        if parts.query:
+            secrets.add(parts.query)
+    except ValueError:
+        pass
+
+    try:
+        from sqlalchemy.engine import make_url
+
+        url = make_url(raw)
+        secrets.update({url.username or "", url.password or ""})
+        for key, value in url.query.items():
+            if not any(token in key.lower() for token in _SENSITIVE_QUERY_KEYS):
+                continue
+            values = value if isinstance(value, tuple) else (value,)
+            secrets.update(str(v) for v in values)
+    except Exception:
+        pass
+
+    return sorted((s for s in secrets if s), key=len, reverse=True)
+
+
+def _redact_db_message(message: str, db: str) -> str:
+    """Replace the raw DB target and any embedded credentials in ``message``."""
+    raw = str(db).strip()
+    safe = _sanitize_db_target(raw)
+    text = message
+    if raw and raw != safe:
+        text = text.replace(raw, safe)
+    for secret in _db_secrets(raw):
+        if re.fullmatch(r"[\w.-]+", secret):
+            text = re.sub(rf"(?<![\w]){re.escape(secret)}(?![\w])", _REDACTED, text)
+        else:
+            text = text.replace(secret, _REDACTED)
+    return text
+
+
+@contextmanager
+def _db_error_boundary(db: str) -> Iterator[None]:
+    """Like ``cli_error_boundary`` but scrubs DB credentials from error messages."""
+    try:
+        yield
+    except (TehranStocksError, ValueError) as exc:
+        print_error(_redact_db_message(str(exc), db), label=type(exc).__name__)
+        raise typer.Exit(code=exit_code_for_error(exc)) from None
+
+
 def _open_cli_store(
     db: str,
     *,
@@ -248,7 +354,8 @@ def _open_cli_store(
         local_path = _is_local_sqlite_file(db)
         if local_path is not None and not local_path.exists():
             raise StorageError(
-                f"Database file not found: {local_path}. Run 'tse db init --db {db}' first."
+                f"Database file not found: {local_path}. "
+                f"Run 'tse db init --db {_sanitize_db_target(db)}' first."
             )
 
     return open_store(db, backend=backend, init_schema=init_schema)
@@ -1061,11 +1168,11 @@ def db_init_cmd(
 ) -> None:
     """Initialize schema in a SQLite file or SQLAlchemy database URI."""
     resolved_fmt = resolve_output_format(fmt, as_json)
-    with cli_error_boundary():
+    with _db_error_boundary(db):
         store = _open_cli_store(db, backend=backend, init_schema=False)
         try:
             store.init_schema()
-            payload = {"status": "initialized", "db": db, **store.stats()}
+            payload = {"status": "initialized", "db": _sanitize_db_target(db), **store.stats()}
         finally:
             store.close()
     output_record(payload, fmt=resolved_fmt, title="Database Initialized")
@@ -1122,7 +1229,7 @@ def db_sync_cmd(
     parsed_symbols = _parse_symbols_option(symbols)
     cfg = _get_config(ctx)
 
-    with cli_error_boundary():
+    with _db_error_boundary(db):
         if sync_all and (parsed_symbols is not None or sector is not None):
             raise ValueError("Cannot combine --all with --symbols or --sector.")
         if parsed_symbols is not None and sector is not None:
@@ -1203,10 +1310,18 @@ def db_sync_cmd(
 
             errors = getattr(result, "errors", {}) or {}
             for err_symbol, err_msg in errors.items():
-                print_error(f"{err_symbol}: {err_msg}", label="Sync warning")
+                print_error(
+                    _redact_db_message(f"{err_symbol}: {err_msg}", db),
+                    label="Sync warning",
+                )
 
             summary = result.to_dict() if hasattr(result, "to_dict") else dict(result)
-            summary["db"] = db
+            summary["db"] = _sanitize_db_target(db)
+            if isinstance(summary.get("errors"), Mapping):
+                summary["errors"] = {
+                    str(key): _redact_db_message(str(value), db)
+                    for key, value in summary["errors"].items()
+                }
         finally:
             store.close()
 
@@ -1223,7 +1338,12 @@ def db_sync_cmd(
             "skipped_symbols",
         )
     }
-    output_record(summary, fmt=resolved_fmt, title="Database Sync Complete", formatters=formatters)
+    title = "Database Sync Completed with Errors" if errors else "Database Sync Complete"
+    output_record(summary, fmt=resolved_fmt, title=title, formatters=formatters)
+    if errors:
+        # Partial failures must not look like success to scripts/CI: summary is on stdout,
+        # per-symbol warnings are on stderr, and the exit code is non-zero.
+        raise typer.Exit(code=1)
 
 
 @db_app.command("status")
@@ -1238,10 +1358,10 @@ def db_status_cmd(
 ) -> None:
     """Inspect table row counts, date coverage, and sync metadata."""
     resolved_fmt = resolve_output_format(fmt, as_json)
-    with cli_error_boundary():
+    with _db_error_boundary(db):
         store = _open_cli_store(db, backend=backend, init_schema=False, require_exists=True)
         try:
-            payload = {"db": db, **store.stats()}
+            payload = {"db": _sanitize_db_target(db), **store.stats()}
         finally:
             store.close()
     formatters = {
@@ -1276,7 +1396,7 @@ def db_query_cmd(
 ) -> None:
     """Execute a validated read-only SQL query against the local database."""
     resolved_fmt = resolve_output_format(fmt, as_json)
-    with cli_error_boundary():
+    with _db_error_boundary(db):
         store = _open_cli_store(db, backend=backend, init_schema=False, require_exists=True)
         try:
             rows = store.query_readonly(sql)

@@ -720,3 +720,203 @@ def test_error_exit_codes_global_options_and_hooks(monkeypatch: pytest.MonkeyPat
     skill_help = runner.invoke(app, ["skill", "--help"])
     assert skill_help.exit_code == 0
     assert "skill" in skill_help.stdout.lower()
+
+
+SECRET_DB_URL = "postgresql://alice:s3cr3t_pw@localhost:5432/tse?sslmode=require"
+SAFE_DB_URL = "postgresql://localhost:5432/tse"
+
+
+def _assert_no_db_secrets(result: Any) -> None:
+    combined = result.stdout + result.stderr
+    assert "s3cr3t_pw" not in combined
+    assert "alice" not in combined
+    assert "sslmode" not in combined
+
+
+class _FakeCliStore:
+    def __init__(self, target: str) -> None:
+        self.target = target
+        self.closed = False
+
+    def init_schema(self) -> None:
+        return None
+
+    def stats(self) -> dict[str, Any]:
+        return {
+            "schema_version": 1,
+            "sectors": 0,
+            "instruments": 0,
+            "daily_prices": 0,
+            "client_types": 0,
+            "price_adjustments": 0,
+            "share_changes": 0,
+            "sync_meta": 0,
+        }
+
+    def close(self) -> None:
+        self.closed = True
+
+
+def _patch_fake_storage(
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    sync_errors: dict[str, str] | None = None,
+    open_error: str | None = None,
+) -> list[str]:
+    import tehran_stocks.storage as storage_mod
+    from tehran_stocks.exceptions import StorageError
+    from tehran_stocks.storage import SyncResult
+
+    opened: list[str] = []
+
+    def fake_open_store(
+        target: Any,
+        *,
+        backend: str | None = None,
+        init_schema: bool = True,
+        **kwargs: Any,
+    ) -> _FakeCliStore:
+        opened.append(str(target))
+        if open_error is not None:
+            raise StorageError(open_error.format(target=target))
+        return _FakeCliStore(str(target))
+
+    class FakeSyncService:
+        def __init__(self, store: Any, **kwargs: Any) -> None:
+            self.store = store
+
+        def sync_all(self, **kwargs: Any) -> SyncResult:
+            errors = dict(sync_errors or {})
+            return SyncResult(
+                sectors=2,
+                instruments=12,
+                prices=15,
+                synced_symbols=1,
+                skipped_symbols=len(errors),
+                errors=errors,
+            )
+
+    monkeypatch.setattr(storage_mod, "open_store", fake_open_store)
+    monkeypatch.setattr(storage_mod, "SyncService", FakeSyncService)
+    return opened
+
+
+def test_sanitize_db_target_strips_credentials_and_query() -> None:
+    assert cli_mod._sanitize_db_target(SECRET_DB_URL) == SAFE_DB_URL
+    assert (
+        cli_mod._sanitize_db_target(
+            "postgresql+psycopg://user:pass@host:5432/db?sslmode=require"
+        )
+        == "postgresql+psycopg://host:5432/db"
+    )
+    assert cli_mod._sanitize_db_target("mysql+pymysql://u:p%40ss@db.example.com/tse") == (
+        "mysql+pymysql://db.example.com/tse"
+    )
+    assert cli_mod._sanitize_db_target("./tse.sqlite") == "./tse.sqlite"
+    assert cli_mod._sanitize_db_target("/data/tse.sqlite") == "/data/tse.sqlite"
+    assert cli_mod._sanitize_db_target(":memory:") == ":memory:"
+    assert cli_mod._sanitize_db_target("sqlite:////data/tse.sqlite") == "sqlite:////data/tse.sqlite"
+    assert cli_mod._sanitize_db_target("duckdb:///./tse.duckdb") == "duckdb:///./tse.duckdb"
+
+    redacted = cli_mod._redact_db_message(
+        f'connect to {SECRET_DB_URL} failed: password authentication failed for user "alice"',
+        SECRET_DB_URL,
+    )
+    assert SAFE_DB_URL in redacted
+    assert "alice" not in redacted
+    assert "s3cr3t_pw" not in redacted
+
+
+def test_db_commands_never_leak_database_credentials(monkeypatch: pytest.MonkeyPatch) -> None:
+    opened = _patch_fake_storage(monkeypatch)
+
+    commands: list[list[str]] = [
+        ["db", "init", "--db", SECRET_DB_URL],
+        ["db", "sync", "--db", SECRET_DB_URL, "--symbols", "کگل"],
+        ["db", "status", "--db", SECRET_DB_URL],
+    ]
+    for base_args in commands:
+        json_res = _invoke([*base_args, "--json"])
+        assert json_res.exit_code == 0, json_res.stderr
+        _assert_no_db_secrets(json_res)
+        assert json.loads(json_res.stdout)["db"] == SAFE_DB_URL
+
+        table_res = _invoke(base_args)
+        assert table_res.exit_code == 0, table_res.stderr
+        _assert_no_db_secrets(table_res)
+
+        csv_res = _invoke([*base_args, "--format", "csv"])
+        assert csv_res.exit_code == 0, csv_res.stderr
+        _assert_no_db_secrets(csv_res)
+
+    # TEHRAN_STOCKS_DB env var path is sanitized as well.
+    env_res = _invoke(["db", "status", "--json"], env={"TEHRAN_STOCKS_DB": SECRET_DB_URL})
+    assert env_res.exit_code == 0
+    _assert_no_db_secrets(env_res)
+    assert json.loads(env_res.stdout)["db"] == SAFE_DB_URL
+
+    # The real (credential-bearing) URL is still what the store connects with.
+    assert opened and all(target == SECRET_DB_URL for target in opened)
+
+
+def test_db_command_errors_never_leak_database_credentials(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _patch_fake_storage(
+        monkeypatch,
+        open_error=(
+            "SQLAlchemy storage error: (psycopg.OperationalError) connection to {target} "
+            'failed: FATAL: password authentication failed for user "alice" (s3cr3t_pw)'
+        ),
+    )
+
+    for args in (
+        ["db", "init", "--db", SECRET_DB_URL],
+        ["db", "sync", "--db", SECRET_DB_URL, "--symbols", "کگل"],
+        ["db", "status", "--db", SECRET_DB_URL],
+        ["db", "query", "--db", SECRET_DB_URL, "SELECT 1"],
+    ):
+        res = _invoke(args)
+        assert res.exit_code == 6
+        assert res.stdout == ""
+        assert "StorageError:" in res.stderr
+        assert "password authentication failed" in res.stderr
+        _assert_no_db_secrets(res)
+
+
+def test_db_sync_partial_failure_emits_summary_and_exits_nonzero(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    sync_errors = {"ناموجود": "InstrumentNotFoundError: Instrument not found: ناموجود"}
+    _patch_fake_storage(monkeypatch, sync_errors=sync_errors)
+    db = str(tmp_path / "partial.sqlite")
+
+    json_res = _invoke(["db", "sync", "--db", db, "--symbols", "کگل,ناموجود", "--json"])
+    assert json_res.exit_code == 1
+    summary = json.loads(json_res.stdout)
+    assert summary["prices"] == 15
+    assert summary["synced_symbols"] == 1
+    assert summary["skipped_symbols"] == 1
+    assert summary["errors"] == sync_errors
+    assert summary["db"] == db
+    assert "Sync warning" in json_res.stderr
+    assert "ناموجود" in json_res.stderr
+
+    table_res = _invoke(["db", "sync", "--db", db, "--symbols", "کگل,ناموجود"])
+    assert table_res.exit_code == 1
+    assert "Completed with Errors" in table_res.stdout
+    assert "prices" in table_res.stdout
+    assert "Sync warning" in table_res.stderr
+
+    csv_res = _invoke(["db", "sync", "--db", db, "--symbols", "کگل,ناموجود", "--format", "csv"])
+    assert csv_res.exit_code == 1
+    csv_rows = list(csv.DictReader(io.StringIO(csv_res.stdout)))
+    assert csv_rows[0]["prices"] == "15"
+
+    # A clean sync keeps exit code 0 and the normal title.
+    _patch_fake_storage(monkeypatch, sync_errors={})
+    ok_res = _invoke(["db", "sync", "--db", db, "--symbols", "کگل"])
+    assert ok_res.exit_code == 0
+    assert "Database Sync Complete" in ok_res.stdout
+    assert "Completed with Errors" not in ok_res.stdout

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Awaitable, Callable, Mapping, Sequence
+from collections.abc import Awaitable, Callable, Coroutine, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from datetime import date, timedelta
 from typing import Any
@@ -71,6 +71,21 @@ def _set_meta_if_supported(store: StorageBackend, key: str, value: str) -> None:
     setter = getattr(store, "set_sync_meta", None)
     if callable(setter):
         setter(key, value)
+
+
+async def _gather_fail_fast(coros: Sequence[Coroutine[Any, Any, Any]]) -> list[Any]:
+    """Run coroutines concurrently, cancelling and draining siblings on any failure."""
+    if not coros:
+        return []
+    tasks = [asyncio.create_task(coro) for coro in coros]
+    try:
+        return await asyncio.gather(*tasks)
+    except BaseException:
+        for task in tasks:
+            if not task.done():
+                task.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)
+        raise
 
 
 def _parse_static_sectors(static_data: Any) -> list[Sector]:
@@ -218,9 +233,11 @@ class AsyncSyncService:
         *,
         on_progress: Callable[[SyncProgress], Any] | None = None,
     ) -> SyncResult:
-        static_data, watch_data = await asyncio.gather(
-            client.transport.get_json("/api/StaticData/GetStaticData"),
-            client.transport.get_json("/api/ClosingPrice/GetMarketWatch"),
+        static_data, watch_data = await _gather_fail_fast(
+            [
+                client.transport.get_json("/api/StaticData/GetStaticData"),
+                client.transport.get_json("/api/ClosingPrice/GetMarketWatch"),
+            ]
         )
 
         sectors = _parse_static_sectors(static_data)
@@ -384,7 +401,7 @@ class AsyncSyncService:
                         ),
                     )
 
-        await asyncio.gather(*(_worker(label, code) for label, code in targets))
+        await _gather_fail_fast([_worker(label, code) for label, code in targets])
         return SyncResult(
             prices=totals["prices"],
             adjustments=totals["adjustments"],
@@ -418,15 +435,15 @@ class AsyncSyncService:
                 incremental=incremental,
                 overlap_days=overlap_days,
             )
-            tasks: list[Awaitable[Any]] = [
+            coros: list[Coroutine[Any, Any, Any]] = [
                 active_client.prices.history(ins_code, days=fetch_days, adjusted=False)
             ]
             if include_adjustments:
-                tasks.append(active_client.prices.adjustments(ins_code))
+                coros.append(active_client.prices.adjustments(ins_code))
             if include_share_changes:
-                tasks.append(active_client.instruments.share_changes(ins_code))
+                coros.append(active_client.instruments.share_changes(ins_code))
 
-            results = await asyncio.gather(*tasks)
+            results = await _gather_fail_fast(coros)
             bars = _filter_incremental(
                 results[0],
                 last_date,
