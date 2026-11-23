@@ -46,6 +46,11 @@ dependencies = [
 postgres = ["psycopg[binary]>=3.2"]
 duckdb = ["duckdb>=1.1", "duckdb-engine>=0.13"]
 
+[project.scripts]
+tse = "tehran_stocks.cli:main"
+tehran-stocks = "tehran_stocks.cli:main"
+tehran-stocks-mcp = "tehran_stocks.mcp_server:main"
+
 [project.urls]
 Homepage = "https://ghodsizadeh.github.io/tehran-stocks/"
 Documentation = "https://ghodsizadeh.github.io/tehran-stocks/"
@@ -70,13 +75,16 @@ addopts = "-m 'not live'"
 asyncio_default_fixture_loop_scope = "function"
 
 [tool.hatch.build.targets.sdist]
-include = ["src/tehran_stocks"]
+include = ["src/tehran_stocks", "skills"]
 
 [tool.hatch.build.targets.wheel]
 include = ["src/tehran_stocks"]
 
 [tool.hatch.build.targets.wheel.sources]
 "src/tehran_stocks" = "tehran_stocks"
+
+[tool.hatch.build.targets.wheel.force-include]
+"skills" = "tehran_stocks/_skills"
 
 [build-system]
 requires = ["hatchling"]

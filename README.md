@@ -1,220 +1,124 @@
-# Tehran Stock Market بورس تهران در پایتون
+# Tehran Stocks — بورس تهران در پایتون
 
-[![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
-![PyPI - Downloads](https://img.shields.io/pypi/dw/tehran_stocks.svg?color=blue)
-![PyPI - Downloads](https://img.shields.io/pypi/dm/tehran_stocks.svg?color=blue)
-[![PyPI version](https://badge.fury.io/py/tehran-stocks.svg)](https://badge.fury.io/py/tehran-stocks)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/tehran-stocks.svg)
-[![HitCount](https://hits.dwyl.com/ghodsizadeh/tehran-stocks.svg?style=flat-square)](http://hits.dwyl.com/ghodsizadeh/tehran-stocks)
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/ghodsizadeh/tehran-stocks/blob/master/Example/Read_Data.ipynb)
+[![PyPI](https://img.shields.io/pypi/v/tehran-stocks.svg)](https://pypi.org/project/tehran-stocks/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A python package that helps to access TSETMC stock price history, Using OOP Interface
+**Tehran Stocks v3** fetches Tehran Stock Exchange data directly from the TSETMC JSON API. Importing the package doesn’t create a database or write config files. Start with the Python SDK or the `tse` command line, and enable local storage only if you need it.
 
-## Features
+<p lang="fa" dir="rtl">
+نسخهٔ ۳ «بورس تهران در پایتون» داده‌های بازار را مستقیماً از رابط JSON شرکت مدیریت فناوری بورس تهران (TSETMC) می‌گیرد. وارد کردن بسته در پایتون نه پایگاه داده می‌سازد و نه فایل تنظیمات می‌نویسد. با کتابخانهٔ پایتون یا فرمان <code>tse</code> شروع کنید و فقط در صورت نیاز داده‌ها را ذخیره کنید.
+</p>
 
-- Download All stocks prices
-- Download prices from a group (i.e ETFs or cars, etc.)
-- Download Price history of one specific Stock
-- After first setup available offline.
-- CommandLine Interface
-- Export data to csv, excel or Stata(dta)
-- Compatible with `sqlalchemy`
-- Compatible with `PANDAS`
-- Based on light `sqlite`
+[Install / نصب](#install) · [Python](#python) · [CLI / خط فرمان](#cli) · [Storage / ذخیره‌سازی](#storage) · [MCP & Skills](#agents) · [Migration / مهاجرت](#migration)
 
----
+<a id="install"></a>
+## Install / نصب
 
-## Table of Contents
+v3 requires **Python 3.11+**. These examples are for v3; an unpinned PyPI install may still give you v2. Before v3 is published, install from a checkout of the v3 source with `python -m pip install .`.
 
-<!-- TOC orderedlist:true -->
-
-- [1. Tehran Stock Market بورس تهران در پایتون](#1-tehran-stock-market-%D8%A8%D9%88%D8%B1%D8%B3-%D8%AA%D9%87%D8%B1%D8%A7%D9%86-%D8%AF%D8%B1-%D9%BE%D8%A7%DB%8C%D8%AA%D9%88%D9%86)
-    - [1.1. Features](#11-features)
-    - [1.2. Table of Contents](#12-table-of-contents)
-- [2. Usage](#2-usage)
-    - [2.1. - Install](#21---install)
-    - [2.2. - Initialization](#22---initialization)
-        - [2.2.1. -1 Command line](#221--1-command-line)
-        - [2.2.2. -2 Python](#222--2-python)
-    - [2.3. - Download and Update prices](#23---download-and-update-prices)
-        - [2.3.1. -1 Command line](#231--1-command-line)
-        - [2.3.2. -2 Python](#232--2-python)
-    - [2.4. - Access Data](#24---access-data)
-        - [2.4.1. -1 Search Stocks](#241--1-search-stocks)
-        - [2.4.2. -2 Get Instant price and more details:](#242--2-get-instant-price-and-more-details)
-    - [2.5. - Custom Database](#25---custom-database)
-    - [2.6. Todo](#26-todo)
-- [3. Support❤️](#3-support)
-
-<!-- /TOC -->
-
-# Usage
-
-## 0 - Install
-
-Python 3.11 or newer is required.
+<p lang="fa" dir="rtl">
+نسخهٔ ۳ به پایتون ۳٫۱۱ یا بالاتر نیاز دارد. مثال‌های این صفحه برای نسخهٔ ۳ هستند؛ نصب از PyPI بدون تعیین نسخه ممکن است هنوز نسخهٔ ۲ را نصب کند. تا پیش از انتشار نسخهٔ ۳، فرمان <code>python -m pip install .</code> را در پوشهٔ کد منبع همین نسخه اجرا کنید.
+</p>
 
 ```bash
-pip install tehran_stocks
+# After v3 is published / پس از انتشار نسخهٔ ۳
+python -m pip install 'tehran-stocks>=3,<4'
+# Or with uv / یا با uv
+uv add 'tehran-stocks>=3,<4'
 ```
 
-## 1- Initialization
+<a id="python"></a>
+## Python quickstart / شروع سریع با پایتون
 
-For first use you need initialize the database
+Get typed quotes, adjusted OHLCV history, individual and institutional trades, order books, indices, and Codal disclosures. Tickers, ISINs, and `insCode`s are accepted; Persian and Arabic character variants are normalized. Use `Client` or `AsyncClient` to reuse an HTTP/2 session across requests.
 
-### 1-1 Command line
+<p lang="fa" dir="rtl">
+قیمت‌ها، تاریخچهٔ تعدیل‌شده، آمار معاملات حقیقی و حقوقی، سفارش‌های خرید و فروش، شاخص‌ها و اطلاعیه‌های کدال به‌صورت مدل‌های نوع‌دار برمی‌گردند. نماد، شناسهٔ ISIN یا شناسهٔ <code>insCode</code> را می‌توانید وارد کنید؛ شکل‌های فارسی و عربی حروف به‌طور خودکار یکسان می‌شوند. برای استفادهٔ مجدد از اتصال HTTP/2 در چند درخواست، از <code>Client</code> یا <code>AsyncClient</code> استفاده کنید.
+</p>
+
+```python
+import tehran_stocks as ts
+
+with ts.Client() as client:
+    quote = client.prices.quote("کگل")
+    bars = client.prices.history("کگل", days=30, adjusted=True)
+
+print(quote.last, quote.close)  # Last trade and closing price, in IRR
+print(ts.to_dataframe(bars, jalali=True).tail())
+```
+
+<a id="cli"></a>
+## Command line / خط فرمان
+
+`tse` (also `tehran-stocks`) displays tables by default. Use `--json` in scripts and `--format csv` to export data. None of these examples needs a database.
+
+<p lang="fa" dir="rtl">
+فرمان <code>tse</code> (یا <code>tehran-stocks</code>) خروجی را به‌طور پیش‌فرض به شکل جدول نشان می‌دهد. برای استفاده در اسکریپت‌ها <code>--json</code> و برای خروجی CSV گزینهٔ <code>--format csv</code> را به کار ببرید. فرمان‌های زیر به پایگاه داده نیاز ندارند.
+</p>
 
 ```bash
-ts-get init  # Set up to sqlite database
+tse quote کگل --json
+tse history کگل --days 30 --adjusted --format csv > kgl.csv
+tse screen --sort money_flow --limit 10
+tse --help
 ```
 
-### 1-2 Python
+<a id="storage"></a>
+## Optional storage / ذخیره‌سازی اختیاری
 
-```python
-import tehran_stocks
-# On first import package initialize itself
-```
+Use `open_store()` or `tse db` to keep a local copy for SQL queries and offline analysis. SQLite needs no driver extra; `SQLAlchemyStore` supports other backends, with `[postgres]` and `[duckdb]` extras for their drivers. `SyncService` and `AsyncSyncService` support incremental updates.
 
-During initialization you will prompt for downloading all prices. if you answer yes it will download all prices, otherwise you can download data
-
-## 2- Download and Update prices
-
-### 2-1 Command line
+<p lang="fa" dir="rtl">
+برای نگهداری نسخه‌ای محلی از داده‌ها، اجرای پرس‌وجوی SQL و تحلیل آفلاین، از <code>open_store()</code> یا <code>tse db</code> استفاده کنید. SQLite به درایور اضافی نیاز ندارد. برای اتصال به PostgreSQL یا DuckDB از طریق <code>SQLAlchemyStore</code>، افزونهٔ <code>[postgres]</code> یا <code>[duckdb]</code> را نصب کنید. <code>SyncService</code> و <code>AsyncSyncService</code> از همگام‌سازی افزایشی پشتیبانی می‌کنند.
+</p>
 
 ```bash
-ts-get update # update  all price , or download all if no price exist
-ts-get  group 34 ## 34 is the code for car's group.
-ts-get get_groups ## get group name and group codes
+tse db init --db ./tse.sqlite
+tse db sync --db ./tse.sqlite --symbols کگل,فولاد --client-type
+tse db status --db ./tse.sqlite
 ```
 
-### 2-2 Python
+<a id="agents"></a>
+## MCP and Agent Skills / ابزارهای عامل‌های هوش مصنوعی
 
-```python
-from tehran_stocks import get_all_price, Stocks, update_group
+For a local MCP client, configure `tehran-stocks-mcp` as the stdio command (or use `tse mcp`). Market tools and resources don’t need a DB. Attach one with `--db` only for trusted clients that need DB sync or SQL queries. Streamable HTTP is also available via `tse mcp --transport streamable-http`.
 
-get_all_price() # download and(or) update all prices
+The wheel bundles `tehran-stocks-setup` and `tehran-stocks-analysis`. The installer preserves existing copies unless you pass `--overwrite`.
 
-update_group(34) #download and(or) update Stocks in groupCode = 34 (Cars)
+<p lang="fa" dir="rtl">
+برای یک کلاینت محلی MCP، فرمان <code>tehran-stocks-mcp</code> (یا <code>tse mcp</code>) را با رابط <code>stdio</code> تنظیم کنید. ابزارها و منابع دادهٔ بازار به پایگاه داده نیاز ندارند. گزینهٔ <code>--db</code> را فقط برای کلاینت‌های مورد اعتماد که به همگام‌سازی یا پرس‌وجوی SQL نیاز دارند فعال کنید. رابط Streamable HTTP هم با <code>tse mcp --transport streamable-http</code> در دسترس است.
+</p>
 
-Stocks.get_group() # to see list of group codes
-```
-
-## 3- Access Data
-
-To access data you can use `Stocks` which is an customized `sqlalchemy` object, which helps you to find prices on an easy way.
-
-### 3-1 Search Stocks
-
-```python
-from tehran_stocks import Stocks, db
-
-# You can use query to find stocks
-stock = Stocks.query.filter_by(name='كگل').first() #find by symbol(نماد)
-
-stock = Stocks.query.filter_by(code='35700344742885862').first() # find by code on tsetmc url
-
-stock = Stocks.query.filter(Stocks.title.like('%گل گهر%')).first() # Search by title
-
-stock_list = Stocks.query.filter_by(group_code =34).all() # find all Stocks in Khodro
-
-stock_list = Stocks.query.filter(Stocks.group_code.in_([13,34])).all() # all stocks in khodro and felezat
-
-
-## (Advanced)or run sql query using orm or raw sql
-db.session.query(Stocks.group_code, Stocks.group_name).group_by(Stocks.group_code).all()
-
-db.session.execute('select group_code , group_name from stocks group by group_name').fetchall()
-```
-
-Now easily access stock price and do whatever you want with `pandas` dataframes:
-
-```python
-# use data as a pandas dataframe
->>> stock.df#
-      id               code        ticker  dtyyyymmdd    first     high      low    close        value      vol  openint per     open     last       date
-0  22491  35700344742885862  Gol-E-Gohar.    20040829  12000.0  12021.0  12000.0  12000.0  18841605000  1570000     2708   D  12000.0  12000.0 2004-08-29
-
->>> stock.summary()
-Start date: 2004/08/29
-End date: 2019/07/14
-Total days: 2987
-
->>> stock.update()
-# update stock price history
-
-# Export to your preferred format
->>> stock.df.to_csv('price.csv')
->>> stock.df.to_excel('price.xlsx')
->>> stock.df.to_stata('price.dta')
-
-```
-
-### 3-2 Get Instant price and more details:
-
-```python
->>> stock.get_instant_detail()
-{'time': '12:29:57',
- 'last_price': '12950',
- 'last_close': '13060',
- 'last_high': '13300',
- 'last_low': '13130',
- 'last_open': '13330',
- 'trade_count': '12760',
- 'trade_volume': '1140',
- 'trade_value': '4671236',
- 'market_cap': '60715047900',
- 'date_string': '20220404',
- 'time_string': '122957'}
-
-# get change in share count
->>> stock.get_shares_history()
-
-date	new_shares	old_shares	gdate
-0	1400-12-08 00:00:00	200.000 B	100.000 B	2022-02-27
-1	1400-04-20 00:00:00	100.000 B	74.400 B	2021-07-11
-
-# get change in price ~ dividend, split, etc.
->> stock.get_dividend()
-date	after	before	dividend	gdate
-0	1400-04-16 00:00:00	18770	20070	1300	2021-07-07
-1	1399-04-18 00:00:00	16350	17250	900	2020-07-08
-)
-```
-
-## 4- Custom Database
-
-You can change the default database by updating the config file on:
+<p lang="fa" dir="rtl">
+مهارت‌های <code>tehran-stocks-setup</code> و <code>tehran-stocks-analysis</code> در بستهٔ نصب پایتون قرار دارند. نصب‌کننده نسخه‌های موجود را حفظ می‌کند، مگر اینکه خودتان <code>--overwrite</code> را مشخص کنید.
+</p>
 
 ```bash
-~/.tse/config.yml #unix MacOS/Linux
-C:\Users\User\{USERNAME}\.tse\config.yml #Windows
+tse skill list
+tse skill install --target auto --scope project
 ```
 
-Custom Config for postgresql (you may need to install `pyscopg2`):
+<a id="migration"></a>
+## Migrating from v2 / مهاجرت از نسخهٔ ۲
 
-```yaml
-database:
-  database: stocks
-  engine: postgresql
-  host: localhost
-  password: password
-  port: 5432
-  user: postgres
+v3 is a breaking release. Replace `Stocks` queries with `ts.search()` or `ts.quote()`, and `stock.df` with `ts.to_dataframe(ts.history(symbol))`. Use `tse` instead of `ts-get`. v3 does not automatically read or migrate the old `~/.tse/` config and database; keep a backup if you still need them.
+
+<p lang="fa" dir="rtl">
+نسخهٔ ۳ با رابط قدیمی سازگار نیست. به‌جای پرس‌وجوهای <code>Stocks</code> از <code>ts.search()</code> یا <code>ts.quote()</code> و به‌جای <code>stock.df</code> از <code>ts.to_dataframe(ts.history(symbol))</code> استفاده کنید. فرمان <code>tse</code> جایگزین <code>ts-get</code> شده است. نسخهٔ ۳ تنظیمات و پایگاه دادهٔ قدیمی در <code>~/.tse/</code> را خودکار نمی‌خواند یا منتقل نمی‌کند؛ اگر هنوز به آن‌ها نیاز دارید، نسخهٔ پشتیبان نگه دارید.
+</p>
+
+## Development / توسعه
+
+The default suite uses fixtures; opt into live tests when TSETMC is reachable.
+
+<p lang="fa" dir="rtl">
+آزمون‌های پیش‌فرض با داده‌های ذخیره‌شده اجرا می‌شوند. در صورت دسترسی به TSETMC، آزمون‌های زنده را جداگانه اجرا کنید.
+</p>
+
+```bash
+uv sync --locked
+uv run --locked pytest
+uv run --locked pytest -m live
 ```
 
-## Todo
-
-- [x] Create Database
-- [x] Download Data
-- [x] CommandLine Support
-- [x] Jalali Support
-- [x] Instant Data
-- [x] Custom database
-
-# Support❤️
-
-- If you like this package you can buy me a cup of coffee ☕️.
-  - [IDPAY](https://idpay.ir/ghodsizadeh)
-  - ![Keybase BTC](https://img.shields.io/keybase/btc/mghodsizadeh)
-- Subscribe and share my youtube channel [![Youtube](https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtube.com/channel/UCF3v_GwH3Jg2c-V3hRwmcbg)
+[MIT License / مجوز MIT](LICENSE)

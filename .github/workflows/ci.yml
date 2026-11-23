@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up uv and Python ${{ matrix.python-version }}
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+
+      - name: Install locked dependencies
+        run: uv sync --locked
+
+      - name: Run offline test suite
+        run: uv run pytest -v
+
+  build:
+    name: Build & Verify Wheel
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+          enable-cache: true
+
+      - name: Install locked dependencies
+        run: uv sync --locked
+
+      - name: Build sdist and wheel
+        run: uv build
+
+      - name: Verify built wheel contains tehran_stocks/_skills
+        run: |
+          uv run python -c '
+          import glob, zipfile
+          wheels = sorted(glob.glob("dist/*.whl"))
+          assert len(wheels) == 1, f"Expected 1 wheel, found {wheels}"
+          with zipfile.ZipFile(wheels[0]) as zf:
+              names = set(zf.namelist())
+          expected = {
+              "tehran_stocks/_skills/tehran-stocks-setup/SKILL.md",
+              "tehran_stocks/_skills/tehran-stocks-analysis/SKILL.md",
+              "tehran_stocks/_skills/tehran-stocks-analysis/references/api-reference.md",
+              "tehran_stocks/_skills/tehran-stocks-analysis/references/tse-domain-glossary.md",
+          }
+          missing = sorted(expected - names)
+          assert not missing, f"Wheel missing bundled skills: {missing}"
+          print(f"Verified {wheels[0]} contains {len(expected)} skill files.")
+          '
+          WHEEL="$(ls dist/*.whl)"
+          uv run --isolated --no-project --with "$WHEEL" tse --version
+          uv run --isolated --no-project --with "$WHEEL" tse skill list --json
