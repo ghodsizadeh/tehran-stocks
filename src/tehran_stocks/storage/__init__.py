@@ -24,6 +24,7 @@ def open_store(
     *,
     backend: str | None = None,
     init_schema: bool = True,
+    read_only: bool = False,
     **kwargs: Any,
 ) -> SQLiteStore | SQLAlchemyStore:
     """Open a ``SQLiteStore`` for local paths/``sqlite://`` or ``SQLAlchemyStore`` for DB URLs.
@@ -34,6 +35,9 @@ def open_store(
         ``open_store("postgresql://user:pass@localhost/tse")`` -> ``SQLAlchemyStore``
         ``open_store("duckdb:///tse.duckdb")`` -> ``SQLAlchemyStore``
         ``open_store("market.db", backend="sqlalchemy")`` -> ``SQLAlchemyStore``
+
+    ``read_only=True`` opens a local SQLite file with ``?mode=ro`` and leaves its journal mode
+    alone (see ``SQLiteStore``). It applies to ``SQLiteStore`` only.
     """
     chosen = backend.strip().lower() if backend is not None else None
 
@@ -46,17 +50,17 @@ def open_store(
         return SQLAlchemyStore(target, auto_init=init_schema, **kwargs)
 
     if chosen == "sqlite":
-        return SQLiteStore(target, auto_init=init_schema, **kwargs)
+        return SQLiteStore(target, auto_init=init_schema, read_only=read_only, **kwargs)
 
     if isinstance(target, Path):
-        return SQLiteStore(target, auto_init=init_schema, **kwargs)
+        return SQLiteStore(target, auto_init=init_schema, read_only=read_only, **kwargs)
 
     raw = str(target).strip()
     if not raw:
         raise StorageError("Storage target cannot be empty")
 
     if "://" not in raw or _is_plain_sqlite_url(raw):
-        return SQLiteStore(raw, auto_init=init_schema, **kwargs)
+        return SQLiteStore(raw, auto_init=init_schema, read_only=read_only, **kwargs)
 
     return SQLAlchemyStore(raw, auto_init=init_schema, **kwargs)
 

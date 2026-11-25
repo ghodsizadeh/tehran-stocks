@@ -801,6 +801,31 @@ def _patch_fake_storage(
     return opened
 
 
+def test_db_query_and_status_leave_a_delete_mode_file_unchanged(tmp_path: Path) -> None:
+    # The issue's reproduction: `tse db query` switched a DELETE-mode file to WAL (#125).
+    import sqlite3
+
+    db_path = tmp_path / "journal-test.sqlite"
+    assert _invoke(["db", "init", "--db", str(db_path)]).exit_code == 0
+    conn = sqlite3.connect(db_path)
+    conn.execute("PRAGMA journal_mode = DELETE")
+    conn.close()
+    before = db_path.read_bytes()
+
+    query = _invoke(["db", "query", "--db", str(db_path), "SELECT 1 AS n", "--json"])
+    assert query.exit_code == 0, query.stderr
+    assert json.loads(query.stdout) == [{"n": 1}]
+    status = _invoke(["db", "status", "--db", str(db_path), "--json"])
+    assert status.exit_code == 0, status.stderr
+
+    assert db_path.read_bytes() == before
+    conn = sqlite3.connect(db_path)
+    try:
+        assert conn.execute("PRAGMA journal_mode").fetchone()[0].lower() == "delete"
+    finally:
+        conn.close()
+
+
 def test_sanitize_db_target_strips_credentials_and_query() -> None:
     assert cli_mod._sanitize_db_target(SECRET_DB_URL) == SAFE_DB_URL
     assert (

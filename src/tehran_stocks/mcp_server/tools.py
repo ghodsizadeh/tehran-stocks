@@ -611,9 +611,13 @@ def _open_store_for_query(storage_mod: Any, target: str) -> Any:
         )
     open_fn = storage_mod.open_store
     sig = inspect.signature(open_fn)
+    kwargs: dict[str, Any] = {}
     if "init_schema" in sig.parameters:
-        return open_fn(target, init_schema=False)
-    return open_fn(target)
+        kwargs["init_schema"] = False
+    # A query must not change the file: opening it writable switches it to WAL mode.
+    if "read_only" in sig.parameters:
+        kwargs["read_only"] = True
+    return open_fn(target, **kwargs)
 
 
 def _load_storage_module() -> Any:
