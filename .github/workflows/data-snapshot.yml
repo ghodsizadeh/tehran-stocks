@@ -1,0 +1,200 @@
+name: Update TSETMC Data Snapshot
+
+on:
+  schedule:
+    # TSE trading days: Saturday-Wednesday, after market close (~14:30 UTC).
+    - cron: "30 14 * * 0-3,6"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Sync mode"
+        type: choice
+        default: incremental
+        options:
+          - incremental
+          - full
+      sector:
+        description: "Optional sector code for scoped sync / reachability smoke test (e.g. 34)"
+        type: string
+        default: ""
+      symbols:
+        description: "Optional comma-separated symbols (e.g. کگل,فولاد)"
+        type: string
+        default: ""
+      include_client_types:
+        description: "Include individual/institutional (حقیقی/حقوقی) history"
+        type: boolean
+        default: true
+      include_share_changes:
+        description: "Include historical share count changes"
+        type: boolean
+        default: false
+      concurrency:
+        description: "Max concurrent HTTP requests to TSETMC"
+        type: string
+        default: "4"
+      timeout:
+        description: "HTTP request timeout in seconds"
+        type: string
+        default: "30"
+      max_error_ratio:
+        description: "Max tolerated symbol error ratio (0.0-1.0)"
+        type: string
+        default: "0.05"
+      release_tag:
+        description: "Target rolling GitHub Release tag"
+        type: string
+        default: "data-latest"
+      allow_seed:
+        description: "Allow starting from an empty DB if no existing release asset is found"
+        type: boolean
+        default: false
+      publish:
+        description: "Upload packaged snapshot to the GitHub Release"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: data-snapshot-${{ inputs.release_tag || 'data-latest' }}
+  cancel-in-progress: false
+
+jobs:
+  update-snapshot:
+    name: Sync & Publish SQLite Snapshot
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TSETMC_PROXY: ${{ secrets.TSETMC_PROXY }}
+      RELEASE_TAG: ${{ inputs.release_tag || 'data-latest' }}
+      SYNC_MODE: ${{ inputs.mode || 'incremental' }}
+      SYNC_SECTOR: ${{ inputs.sector || '' }}
+      SYNC_SYMBOLS: ${{ inputs.symbols || '' }}
+      INCLUDE_CLIENT_TYPES: ${{ inputs.include_client_types != false && 'true' || 'false' }}
+      INCLUDE_SHARE_CHANGES: ${{ inputs.include_share_changes == true && 'true' || 'false' }}
+      CONCURRENCY: ${{ inputs.concurrency || '4' }}
+      TIMEOUT: ${{ inputs.timeout || '30' }}
+      MAX_ERROR_RATIO: ${{ inputs.max_error_ratio || '0.05' }}
+      ALLOW_SEED: ${{ inputs.allow_seed == true && 'true' || 'false' }}
+      PUBLISH: ${{ github.event_name == 'schedule' && 'true' || (inputs.publish != false && 'true' || 'false') }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up uv and Python 3.12
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+          enable-cache: true
+
+      - name: Install locked dependencies
+        run: uv sync --locked
+
+      - name: Ensure zstd is installed
+        run: |
+          if ! command -v zstd >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y zstd
+          fi
+          zstd --version
+
+      - name: Download existing snapshot seed (if present)
+        id: seed
+        run: |
+          mkdir -p work dist-data
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1 \
+            && gh release download "$RELEASE_TAG" -p "tse.sqlite.zst" -D work --clobber; then
+            echo "Found existing snapshot in release '$RELEASE_TAG'; decompressing..."
+            zstd -d -f -q work/tse.sqlite.zst -o work/tse.sqlite
+            rm -f work/tse.sqlite.zst
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "seeded=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "No existing tse.sqlite.zst asset found in release '$RELEASE_TAG'."
+            if [ "$ALLOW_SEED" = "true" ] || [ -n "$SYNC_SECTOR" ] || [ -n "$SYNC_SYMBOLS" ]; then
+              echo "Proceeding from an empty database."
+              echo "ready=true" >> "$GITHUB_OUTPUT"
+              echo "seeded=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "ready=false" >> "$GITHUB_OUTPUT"
+              echo "seeded=false" >> "$GITHUB_OUTPUT"
+              {
+                echo "## Skipped: No Seed Snapshot Found"
+                echo ""
+                echo "Release \`$RELEASE_TAG\` does not yet contain \`tse.sqlite.zst\`."
+                echo "Seed it once locally (see \`docs/guides/local-database.md\`) or run this workflow manually with \`allow_seed: true\`."
+              } >> "$GITHUB_STEP_SUMMARY"
+            fi
+          fi
+
+      - name: Run TSETMC sync
+        if: steps.seed.outputs.ready == 'true'
+        run: |
+          args=(
+            sync
+            --db work/tse.sqlite
+            --mode "$SYNC_MODE"
+            --concurrency "$CONCURRENCY"
+            --timeout "$TIMEOUT"
+            --max-error-ratio "$MAX_ERROR_RATIO"
+            --summary-out work/sync-summary.json
+          )
+          if [ -n "$SYNC_SECTOR" ]; then
+            args+=(--sector "$SYNC_SECTOR")
+          fi
+          if [ -n "$SYNC_SYMBOLS" ]; then
+            args+=(--symbols "$SYNC_SYMBOLS")
+          fi
+          if [ "$INCLUDE_CLIENT_TYPES" = "true" ]; then
+            args+=(--client-type)
+          else
+            args+=(--no-client-type)
+          fi
+          if [ "$INCLUDE_SHARE_CHANGES" = "true" ]; then
+            args+=(--share-changes)
+          else
+            args+=(--no-share-changes)
+          fi
+          uv run python scripts/data_snapshot.py "${args[@]}"
+
+      - name: Compact and package snapshot
+        if: steps.seed.outputs.ready == 'true'
+        run: |
+          uv run python scripts/data_snapshot.py package \
+            --db work/tse.sqlite \
+            --out-dir dist-data \
+            --compression zstd \
+            --tag "$RELEASE_TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --sync-summary work/sync-summary.json
+
+          uv run python scripts/data_snapshot.py render-summary \
+            --manifest dist-data/manifest.json \
+            --output dist-data/release-notes.md
+
+          cat dist-data/release-notes.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish snapshot to GitHub Releases
+        if: steps.seed.outputs.ready == 'true' && env.PUBLISH == 'true'
+        run: |
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release edit "$RELEASE_TAG" \
+              --title "TSETMC SQLite Snapshot (${RELEASE_TAG})" \
+              --notes-file dist-data/release-notes.md
+          else
+            gh release create "$RELEASE_TAG" \
+              --target "$GITHUB_SHA" \
+              --title "TSETMC SQLite Snapshot (${RELEASE_TAG})" \
+              --notes-file dist-data/release-notes.md
+          fi
+
+          gh release upload "$RELEASE_TAG" \
+            dist-data/tse.sqlite.zst \
+            dist-data/manifest.json \
+            dist-data/SHA256SUMS \
+            --clobber

@@ -150,7 +150,38 @@ tse db query --db ./tse.sqlite "SELECT symbol, name, sector_name FROM instrument
 
 ---
 
-## گام ۴: تغییر موتور به PostgreSQL یا DuckDB بدون تغییر کد تحلیل
+## گام ۴: دریافت نسخهٔ آماده از GitHub Releases (سریع‌تر از همگام‌سازی اولیه)
+
+اگر به تاریخچهٔ کامل بازار نیاز دارید، به‌جای اجرای همگام‌سازی اولیه روی هزاران نماد می‌توانید آخرین نسخهٔ فشردهٔ SQLite را از ریلیز چرخشی `data-latest` دانلود کنید و بعد هر روز فقط روزهای جدید را با `--incremental` اضافه کنید:
+
+```bash
+# ۱. دانلود و بازکردن مستقیم نسخهٔ آماده (با بررسی خودکار SHA-256)
+uv run python scripts/data_snapshot.py download --output ./tse.sqlite
+
+# یا دانلود دستی با curl و zstd:
+curl -fL https://github.com/ghodsizadeh/tehran-stocks/releases/download/data-latest/tse.sqlite.zst -o tse.sqlite.zst
+zstd -d tse.sqlite.zst -o tse.sqlite
+
+# ۲. بررسی آمار دیتابیس و به‌روزرسانی افزایشی روزهای جدید
+tse db status --db ./tse.sqlite
+tse db sync --db ./tse.sqlite --incremental --client-type
+```
+
+!!! note "نحوهٔ ساخت و به‌روزرسانی خودکار اسنپ‌شات (برای نگهدارندگان)"
+    اسکریپت `scripts/data_snapshot.py` و ورک‌فلو `.github/workflows/data-snapshot.yml` خارج از بستهٔ پایتون `tehran-stocks` نگهداری می‌شوند تا حجم بستهٔ PyPI و تاریخچهٔ گیت سبک بماند:
+
+    1. **بذرپاشی اولیه (یک بار روی سیستم محلی یا VPS):**
+       ```bash
+       uv run python scripts/data_snapshot.py sync --db ./work/tse.sqlite --mode full --concurrency 4
+       uv run python scripts/data_snapshot.py package --db ./work/tse.sqlite --out-dir ./dist-data
+       gh release create data-latest ./dist-data/tse.sqlite.zst ./dist-data/manifest.json ./dist-data/SHA256SUMS \
+         --title "TSETMC SQLite Snapshot (data-latest)"
+       ```
+    2. **تست دسترسی TSETMC از GitHub Actions:** قبل از تکیه بر اجرای زمان‌بندی‌شده، ورک‌فلو `Update TSETMC Data Snapshot` را به‌صورت دستی (`workflow_dispatch`) با `sector: "34"` و `publish: false` اجرا کنید. در صورت محدودیت IP سرورهای Azure، می‌توانید سکرت `TSETMC_PROXY` را تنظیم کنید یا همین اسکریپت را روی یک VPS/runner شخصی با `cron` اجرا و با `gh release upload data-latest ... --clobber` منتشر کنید.
+
+---
+
+## گام ۵: تغییر موتور به PostgreSQL یا DuckDB بدون تغییر کد تحلیل
 
 کافی است آدرس اتصال را تغییر دهید؛ تمام کدهای `SyncService`، `get_prices` و `query_readonly` دقیقاً یکسان می‌مانند:
 
