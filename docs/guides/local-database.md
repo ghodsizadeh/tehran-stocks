@@ -155,12 +155,16 @@ tse db query --db ./tse.sqlite "SELECT symbol, name, sector_name FROM instrument
 اگر به تاریخچهٔ کامل بازار نیاز دارید، به‌جای اجرای همگام‌سازی اولیه روی هزاران نماد می‌توانید آخرین نسخهٔ فشردهٔ SQLite را از ریلیز چرخشی `data-latest` دانلود کنید و بعد هر روز فقط روزهای جدید را با `--incremental` اضافه کنید:
 
 ```bash
-# ۱. دانلود و بازکردن مستقیم نسخهٔ آماده (با بررسی خودکار SHA-256)
-uv run python scripts/data_snapshot.py download --output ./tse.sqlite
-
-# یا دانلود دستی با curl و zstd:
+# ۱. دانلود و بازکردن مستقیم نسخهٔ آماده (حدود ۱۸۴ مگابایت فشرده با zstd):
 curl -fL https://github.com/ghodsizadeh/tehran-stocks/releases/download/data-latest/tse.sqlite.zst -o tse.sqlite.zst
 zstd -d tse.sqlite.zst -o tse.sqlite
+
+# (اختیاری) بررسی اصالت فایل با SHA256SUMS:
+curl -fL https://github.com/ghodsizadeh/tehran-stocks/releases/download/data-latest/SHA256SUMS -o SHA256SUMS
+shasum -a 256 -c SHA256SUMS --ignore-missing
+
+# یا اگر مخزن گیت‌هاب را کلون کرده‌اید (دانلود + بررسی خودکار SHA-256 + بازکردن):
+# uv run python scripts/data_snapshot.py download --output ./tse.sqlite
 
 # ۲. بررسی آمار دیتابیس و به‌روزرسانی افزایشی روزهای جدید
 tse db status --db ./tse.sqlite

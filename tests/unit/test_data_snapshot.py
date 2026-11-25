@@ -286,6 +286,7 @@ def test_run_sync_fails_when_all_symbols_fail(tmp_path: Path) -> None:
     fake = _FakeSyncService(
         SyncResult(
             synced_symbols=0,
+            skipped_symbols=0,
             errors={"SYM1": "403", "SYM2": "403"},
         )
     )
@@ -297,6 +298,30 @@ def test_run_sync_fails_when_all_symbols_fail(tmp_path: Path) -> None:
     )
     assert report.passed is False
     assert "All 2 attempted symbols failed" in (report.failure_reason or "")
+
+
+def test_run_sync_counts_skipped_symbols_on_quiet_incremental_day(tmp_path: Path) -> None:
+    """Holidays/no-new-row incremental runs should not fail from a single transient symbol error."""
+    fake = _FakeSyncService(
+        SyncResult(
+            sectors=66,
+            instruments=100,
+            prices=0,
+            synced_symbols=0,
+            skipped_symbols=99,
+            errors={"HALTED1": "timeout"},
+        )
+    )
+    report = snapshot.run_sync(
+        tmp_path / "tse.sqlite",
+        mode="incremental",
+        max_error_ratio=0.05,
+        service_factory=lambda **_: fake,
+    )
+    assert report.passed is True
+    assert report.failure_reason is None
+    assert report.error_count == 1
+    assert report.error_ratio == pytest.approx(0.01)
 
 
 def test_cli_package_and_render_summary(tmp_path: Path) -> None:

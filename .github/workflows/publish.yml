@@ -1,0 +1,138 @@
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Publish target"
+        type: choice
+        default: testpypi
+        options:
+          - testpypi
+          - pypi
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Test, Build & Verify Distribution
+    # Ignore non-package GitHub Releases such as the rolling `data-latest` SQLite snapshot.
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'v')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up uv and Python 3.12
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+          enable-cache: true
+
+      - name: Install locked dependencies
+        run: uv sync --locked
+
+      - name: Verify release tag matches pyproject.toml version
+        if: github.event_name == 'release'
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          uv run python -c '
+          import os, tomllib
+          from pathlib import Path
+          import tehran_stocks
+
+          tag = os.environ["RELEASE_TAG"]
+          expected = tag.removeprefix("v")
+          pyproject_ver = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
+          pkg_ver = tehran_stocks.__version__
+
+          assert pyproject_ver == expected, f"Tag {tag!r} does not match pyproject.toml version {pyproject_ver!r}"
+          assert pkg_ver == expected, f"Tag {tag!r} does not match tehran_stocks.__version__ {pkg_ver!r}"
+          print(f"Verified tag {tag} matches package version {expected}.")
+          '
+
+      - name: Run offline test suite
+        run: uv run pytest -v
+
+      - name: Build sdist and wheel
+        run: uv build
+
+      - name: Verify built wheel contains bundled Agent Skills and CLI entrypoints
+        run: |
+          uv run python -c '
+          import glob, zipfile
+          wheels = sorted(glob.glob("dist/*.whl"))
+          assert len(wheels) == 1, f"Expected 1 wheel, found {wheels}"
+          with zipfile.ZipFile(wheels[0]) as zf:
+              names = set(zf.namelist())
+          expected = {
+              "tehran_stocks/_skills/tehran-stocks-setup/SKILL.md",
+              "tehran_stocks/_skills/tehran-stocks-analysis/SKILL.md",
+              "tehran_stocks/_skills/tehran-stocks-analysis/references/api-reference.md",
+              "tehran_stocks/_skills/tehran-stocks-analysis/references/tse-domain-glossary.md",
+          }
+          missing = sorted(expected - names)
+          assert not missing, f"Wheel missing bundled skills: {missing}"
+          print(f"Verified {wheels[0]} contains {len(expected)} skill files.")
+          '
+          WHEEL="$(ls dist/*.whl)"
+          uv run --isolated --no-project --with "$WHEEL" tse --version
+          uv run --isolated --no-project --with "$WHEEL" tse skill list --json
+          uv run --isolated --no-project --with "$WHEEL" tehran-stocks-mcp --help >/dev/null
+
+      - name: Upload distribution artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+
+  publish-testpypi:
+    name: Publish to TestPyPI (Trusted Publishing)
+    needs: build
+    if: github.event_name == 'workflow_dispatch' && inputs.target == 'testpypi'
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/tehran-stocks
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Download distribution artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+
+      - name: Publish distribution to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+  publish-pypi:
+    name: Publish to PyPI (Trusted Publishing)
+    needs: build
+    if: |
+      (github.event_name == 'release' && startsWith(github.event.release.tag_name, 'v')) ||
+      (github.event_name == 'workflow_dispatch' && inputs.target == 'pypi')
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/tehran-stocks
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Download distribution artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+
+      - name: Publish distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
