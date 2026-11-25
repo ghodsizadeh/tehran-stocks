@@ -117,18 +117,27 @@ import tehran_stocks as ts
 bars = ts.history("فولاد", days=365, adjusted=True)
 df = ts.to_dataframe(bars, jalali=True, index_by_date=True)
 
-# 2. Access Jalali index components directly
-years = df.index.year
-months = df.index.month
+# 2. Access Jalali index components directly and build calendar-accurate OHLCV monthly bars
+j_year = df.index.year.astype(int)
+j_month = df.index.month.astype(int)
+monthly = df.groupby([j_year, j_month]).agg(
+    open=("open", "first"),
+    high=("high", "max"),
+    low=("low", "min"),
+    close=("close", "last"),
+    volume=("volume", "sum"),
+    value=("value", "sum"),
+)
+monthly.index.names = ["j_year", "j_month"]
 
 # 3. Convert Gregorian datetime Series -> jdatetime Series via .jalali accessor
-# Note: in jalali-pandas 1.0.0, call .jalali.to_jalali() before .jalali.strftime / .year
+# Note: in jalali-pandas 1.0.0, add a jdatetime column via .jalali.to_jalali()
+# before using DataFrame .jalali helpers (.groupby / .filter_by_year) or .jalali.strftime
 df["jdate_obj"] = df["date"].jalali.to_jalali()
 df["jdate_str"] = df["jdate_obj"].jalali.strftime("%Y-%m-%d")
 
-# 4. DataFrame .jalali accessor (uses the detected jdatetime column)
-monthly_sums = df.jalali.resample("month")      # 'month' | 'quarter' | 'year' | 'week'
-quarterly_means = df.jalali.groupby("yq").mean(numeric_only=True)  # 'year'|'month'|'ym'|'yq'|'ymd'|'md'
+# 4. DataFrame .jalali accessor (requires a jdatetime column such as jdate_obj above)
+quarterly_means = df.jalali.groupby("yq").mean()      # 'year'|'month'|'ym'|'yq'|'ymd'|'md'
 df_1403 = df.jalali.filter_by_year(1403)
 
 # 5. Construct Jalali date ranges

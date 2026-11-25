@@ -158,6 +158,17 @@ When `--db` (or `TEHRAN_STOCKS_DB`) is configured, the MCP server exposes **12 t
 
 ## 4. Optional Local Database Setup (`SQLiteStore` & `SQLAlchemyStore`)
 
+### Pre-Built Full-Market SQLite Snapshot (`data-latest`)
+
+To skip an initial multi-thousand-symbol backfill, download the pre-built SQLite snapshot (~184 MiB `zstd`) from GitHub Releases and top it up incrementally:
+
+```bash
+curl -fL https://github.com/ghodsizadeh/tehran-stocks/releases/download/data-latest/tse.sqlite.zst -o tse.sqlite.zst
+zstd -d tse.sqlite.zst -o tse.sqlite
+tse db status --db ./tse.sqlite
+tse db sync --db ./tse.sqlite --incremental --client-type
+```
+
 ### Via `tse db` CLI
 
 ```bash

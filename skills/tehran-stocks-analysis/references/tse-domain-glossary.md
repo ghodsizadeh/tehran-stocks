@@ -111,4 +111,4 @@ For ETFs (`GetETFByInsCode`), evaluate **NAV Premium/Discount (`حباب قیم�
   - Months 7–11 (`Mehr`–`Bahman`): **30 days**
   - Month 12 (`Esfand`): **29 days** (30 in leap years)
   - Most Iranian listed corporations end their fiscal year on **Esfand 29/30 (`۱۲/۲۹`)**.
-- **Time-Series Resampling Rule**: Never use standard Gregorian pandas resampling (`"ME"`, `"QE"`, `"YE"`) on Iranian financial data—month boundaries misalign by ~9–11 days every month. Always use `jalali-pandas>=1.0.0` (`df.jalali.resample("month")`, `df.jalali.groupby("ym" | "yq")`, or `JalaliDatetimeIndex` from `ts.to_dataframe()`).
+- **Time-Series Resampling Rule**: Never use standard Gregorian pandas resampling (`"ME"`, `"QE"`, `"YE"`) on Iranian financial data—month boundaries misalign by ~9–11 days every month. Use `JalaliDatetimeIndex` from `ts.to_dataframe(..., jalali=True, index_by_date=True)` with explicit OHLCV grouping (`df.groupby([df.index.year, df.index.month]).agg(...)`), or add a `jdatetime` column via `df["date"].jalali.to_jalali()` before using `jalali-pandas` DataFrame helpers (`df.jalali.groupby("yq")`, `df.jalali.filter_by_year(...)`).

@@ -3,7 +3,7 @@
 [![PyPI](https://img.shields.io/pypi/v/tehran-stocks.svg)](https://pypi.org/project/tehran-stocks/)
 [![Python 3.11+](https://img.shields.io/pypi/pyversions/tehran-stocks.svg)](https://pypi.org/project/tehran-stocks/)
 [![Documentation](https://img.shields.io/badge/Docs-%D9%85%D8%B3%D8%AA%D9%86%D8%AF%D8%A7%D8%AA%20%D9%81%D8%A7%D8%B1%D8%B3%DB%8C-0d9488.svg)](https://ghodsizadeh.github.io/tehran-stocks/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/ghodsizadeh/tehran-stocks/blob/master/LICENSE)
 
 [**فارسی (Persian)**](#persian) · [**English**](#english) · [**مستندات کامل فارسی (Documentation)**](https://ghodsizadeh.github.io/tehran-stocks/)
 
@@ -32,7 +32,7 @@
 
 ### نصب
 
-نیازمند **پایتون ۳.۱۱ یا بالاتر** است. تا پیش از انتشار نهایی نسخهٔ ۳ روی PyPI، می‌توانید از کد منبع همین مخزن با `python -m pip install .` نصب کنید.
+نیازمند **پایتون ۳.۱۱ یا بالاتر** است:
 
 </div>
 
@@ -221,7 +221,7 @@ Importing `tehran_stocks` has **zero side effects**—it creates no database, wr
 
 ### Installation
 
-Requires **Python 3.11+**. Before v3 is published to PyPI, install directly from a source checkout with `python -m pip install .`.
+Requires **Python 3.11+**:
 
 ```bash
 # With uv (recommended)
@@ -346,4 +346,4 @@ uv run --locked pytest -m live     # Live integration tests against cdn.tsetmc.c
 uvx zensical serve                 # Local preview of the Persian RTL docs site
 ```
 
-[MIT License](LICENSE)
+[MIT License](https://github.com/ghodsizadeh/tehran-stocks/blob/master/LICENSE)

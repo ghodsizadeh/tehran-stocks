@@ -309,11 +309,12 @@ def run_sync(
     error_count = len(errors)
     synced_symbols = int(getattr(result, "synced_symbols", 0))
     skipped_symbols = int(getattr(result, "skipped_symbols", 0))
-    attempted = synced_symbols + error_count
+    succeeded_symbols = synced_symbols + skipped_symbols
+    attempted = succeeded_symbols + error_count
     error_ratio = (error_count / attempted) if attempted > 0 else 0.0
 
     failure_reason: str | None = None
-    if error_count > 0 and synced_symbols == 0 and not allow_empty:
+    if error_count > 0 and succeeded_symbols == 0 and not allow_empty:
         failure_reason = f"All {error_count} attempted symbols failed to sync."
     elif attempted > 0 and error_ratio > max_error_ratio:
         failure_reason = (
