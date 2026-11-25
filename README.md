@@ -175,6 +175,11 @@ tse db init --db ./tse.sqlite
 tse db sync --db ./tse.sqlite --symbols کگل,فولاد --client-type
 tse db status --db ./tse.sqlite
 tse db query --db ./tse.sqlite "SELECT symbol, name, sector_name FROM instruments LIMIT 10" --json
+
+# یا دانلود فوری تاریخچهٔ کامل بازار از GitHub Releases (حدود ۱۸۴ مگابایت فشرده با zstd):
+curl -fL https://github.com/ghodsizadeh/tehran-stocks/releases/download/data-latest/tse.sqlite.zst -o tse.sqlite.zst
+zstd -d tse.sqlite.zst -o tse.sqlite
+tse db sync --db ./tse.sqlite --incremental --client-type
 ```
 
 <div dir="rtl">
@@ -313,9 +318,15 @@ tse skill install --target auto --scope project --overwrite
 
 ### Optional Local Storage
 
-Use `open_store()` or `tse db` for offline backtesting and read-only analytical SQL:
+Use `open_store()` or `tse db` for offline backtesting and read-only analytical SQL. For full-market history without running an initial backfill, download the pre-built SQLite snapshot (~184 MiB `zstd`) from the rolling [`data-latest`](https://github.com/ghodsizadeh/tehran-stocks/releases/tag/data-latest) release and top it up incrementally:
 
 ```bash
+# Option A: Download pre-built full-market snapshot (~184 MiB compressed)
+curl -fL https://github.com/ghodsizadeh/tehran-stocks/releases/download/data-latest/tse.sqlite.zst -o tse.sqlite.zst
+zstd -d tse.sqlite.zst -o tse.sqlite
+tse db sync --db ./tse.sqlite --incremental --client-type
+
+# Option B: Sync only specific symbols from scratch
 tse db init --db ./tse.sqlite
 tse db sync --db ./tse.sqlite --symbols کگل,فولاد --client-type
 tse db status --db ./tse.sqlite
