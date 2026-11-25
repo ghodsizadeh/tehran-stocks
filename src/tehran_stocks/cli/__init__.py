@@ -342,6 +342,7 @@ def _open_cli_store(
     backend: str | None = None,
     init_schema: bool = False,
     require_exists: bool = False,
+    read_only: bool = False,
 ) -> Any:
     try:
         from tehran_stocks.storage import open_store  # type: ignore[import-not-found]
@@ -358,7 +359,7 @@ def _open_cli_store(
                 f"Run 'tse db init --db {_sanitize_db_target(db)}' first."
             )
 
-    return open_store(db, backend=backend, init_schema=init_schema)
+    return open_store(db, backend=backend, init_schema=init_schema, read_only=read_only)
 
 
 app = typer.Typer(
@@ -1359,7 +1360,9 @@ def db_status_cmd(
     """Inspect table row counts, date coverage, and sync metadata."""
     resolved_fmt = resolve_output_format(fmt, as_json)
     with _db_error_boundary(db):
-        store = _open_cli_store(db, backend=backend, init_schema=False, require_exists=True)
+        store = _open_cli_store(
+            db, backend=backend, init_schema=False, require_exists=True, read_only=True
+        )
         try:
             payload = {"db": _sanitize_db_target(db), **store.stats()}
         finally:
@@ -1397,7 +1400,9 @@ def db_query_cmd(
     """Execute a validated read-only SQL query against the local database."""
     resolved_fmt = resolve_output_format(fmt, as_json)
     with _db_error_boundary(db):
-        store = _open_cli_store(db, backend=backend, init_schema=False, require_exists=True)
+        store = _open_cli_store(
+            db, backend=backend, init_schema=False, require_exists=True, read_only=True
+        )
         try:
             rows = store.query_readonly(sql)
         finally:

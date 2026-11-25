@@ -193,6 +193,49 @@ def test_storage_zero_import_side_effects(tmp_path: Path) -> None:
     assert list(tmp_path.iterdir()) == []
 
 
+def _delete_mode_db(path: Path) -> bytes:
+    """Create an initialized database switched back to DELETE mode; return its bytes."""
+    import sqlite3
+
+    SQLiteStore(path).close()
+    conn = sqlite3.connect(path)
+    conn.execute("PRAGMA journal_mode = DELETE")
+    conn.close()
+    return path.read_bytes()
+
+
+def test_read_only_store_leaves_the_file_and_its_journal_mode_alone(tmp_path: Path) -> None:
+    # Opening a store switched the file to WAL even when it was only queried (#125).
+    db_path = tmp_path / "journal-test.sqlite"
+    before = _delete_mode_db(db_path)
+
+    with SQLiteStore(db_path, read_only=True) as store:
+        assert store.query_readonly("SELECT 1 AS n") == [{"n": 1}]
+        assert store.query_readonly("PRAGMA journal_mode")[0]["journal_mode"].lower() == "delete"
+        assert store.stats()["schema_version"] == 1
+
+    assert db_path.read_bytes() == before
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["journal-test.sqlite"]
+
+
+def test_read_only_store_does_not_create_a_missing_file(tmp_path: Path) -> None:
+    db_path = tmp_path / "missing" / "tse.db"
+    with pytest.raises(StorageError, match="not found"):
+        SQLiteStore(db_path, read_only=True)
+    assert not db_path.parent.exists()
+
+
+def test_open_store_read_only_routes_to_a_read_only_sqlite_store(tmp_path: Path) -> None:
+    db_path = tmp_path / "tse.db"
+    before = _delete_mode_db(db_path)
+    store = open_store(str(db_path), init_schema=True, read_only=True)
+    try:
+        assert store.query_readonly("SELECT COUNT(*) AS n FROM instruments") == [{"n": 0}]
+    finally:
+        store.close()
+    assert db_path.read_bytes() == before
+
+
 def test_sqlite_store_pragmas_schema_version_and_lifecycle(tmp_path: Path) -> None:
     db_path = tmp_path / "nested" / "tse.db"
     with SQLiteStore(db_path) as store:

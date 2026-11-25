@@ -164,14 +164,28 @@ class SQLiteStore:
         *,
         auto_init: bool = True,
         timeout: float = 30.0,
+        read_only: bool = False,
     ) -> None:
+        """Open ``target``.
+
+        With ``read_only=True`` an existing database file is opened with ``?mode=ro``: the file
+        is not created, the schema is not initialized and its journal mode is left as it is,
+        so a query never changes the file. In-memory databases ignore ``read_only``.
+        """
         self.path = _parse_sqlite_target(target)
         self._is_memory = self.path is None
+        self._read_only = read_only and not self._is_memory
         self._timeout = float(timeout)
         self._lock = threading.RLock()
         self._closed = False
 
-        if self.path is not None:
+        uri = False
+        if self.path is not None and self._read_only:
+            if not self.path.exists():
+                raise StorageError(f"SQLite database file not found: {self.path}")
+            db_arg = f"{self.path.resolve().as_uri()}?mode=ro"
+            uri = True
+        elif self.path is not None:
             self.path.parent.mkdir(parents=True, exist_ok=True)
             db_arg = str(self.path)
         else:
@@ -182,17 +196,20 @@ class SQLiteStore:
                 db_arg,
                 timeout=self._timeout,
                 check_same_thread=False,
+                uri=uri,
             )
             self._conn.row_factory = sqlite3.Row
             self._conn.execute("PRAGMA foreign_keys = ON")
             self._conn.execute(f"PRAGMA busy_timeout = {max(int(self._timeout * 1000), 1000)}")
-            if not self._is_memory:
+            # Switching to WAL rewrites the file header, so a read-only open keeps the
+            # file's own journal mode.
+            if not self._is_memory and not self._read_only:
                 self._conn.execute("PRAGMA journal_mode = WAL")
                 self._conn.execute("PRAGMA synchronous = NORMAL")
         except sqlite3.Error as exc:
             raise StorageError(f"Failed to open SQLite database {target!r}: {exc}") from exc
 
-        if auto_init:
+        if auto_init and not self._read_only:
             self.init_schema()
 
     def _ensure_open(self) -> None:
