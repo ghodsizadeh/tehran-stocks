@@ -273,6 +273,10 @@ def test_sync_client_all_resources_with_real_fixtures() -> None:
         assert quote.ins_code == KGL_INS_CODE
         assert quote.last == pytest.approx(4120.0)
         assert quote.close == pytest.approx(4110.0)
+        assert quote.yesterday == pytest.approx(4000.0)
+        # quote.json has priceChange 0 while last moved 120 from yesterday.
+        assert quote.change == pytest.approx(120.0)
+        assert quote.change_pct == pytest.approx(3.0)
         assert quote.state_title == "مجاز"
 
         bars = client.prices.history("کگل")
@@ -838,7 +842,10 @@ def test_top_level_api_functions() -> None:
     mock_transport = _make_tsetmc_router()
     with Client(transport=mock_transport, retry_backoff=0.0) as client:
         assert api.search("کگل", client=client)[0].ins_code == KGL_INS_CODE
-        assert api.quote("کگل", client=client).close == pytest.approx(4110.0)
+        synced = api.quote("کگل", client=client)
+        assert synced.close == pytest.approx(4110.0)
+        assert synced.change == pytest.approx(120.0)
+        assert synced.change_pct == pytest.approx(3.0)
         assert len(api.history("کگل", client=client)) == 15
         assert len(api.history("کگل", adjusted=True, client=client)) == 15
         assert api.client_type("کگل", client=client).buy_i_count == 628

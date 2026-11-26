@@ -233,6 +233,9 @@ def test_on_demand_search_and_quote_table_json_csv(tmp_path: Path) -> None:
     assert q_data["ins_code"] == KGL_INS_CODE
     assert q_data["last"] == pytest.approx(4120.0)
     assert q_data["close"] == pytest.approx(4110.0)
+    assert q_data["yesterday"] == pytest.approx(4000.0)
+    assert q_data["change"] == pytest.approx(120.0)
+    assert q_data["change_pct"] == pytest.approx(3.0)
     assert q_data["state_title"] == "مجاز"
     assert q_data["jdate"] == "1405-09-02"
 

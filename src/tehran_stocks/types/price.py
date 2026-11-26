@@ -58,10 +58,17 @@ class Quote(SerializableMixin):
         )
         last = _as_float(_pick(payload, "pDrCotVal", "last", default=0.0))
         yesterday = _as_float(_pick(payload, "priceYesterday", "yesterday", default=0.0))
-        change = _as_float(
-            _pick(payload, "priceChange", "change"),
-            default=(last - yesterday) if yesterday else 0.0,
-        )
+        # TSETMC can send priceChange=0 while the last trade has moved. The
+        # stock-analysis guide prints this change beside last, so use
+        # last-versus-yesterday whenever both prices are present. A missing
+        # last trade still keeps the provider field.
+        reported_change = _as_optional_float(_pick(payload, "priceChange", "change"))
+        if last > 0 and yesterday > 0:
+            change = last - yesterday
+        elif reported_change is not None:
+            change = reported_change
+        else:
+            change = 0.0
         change_pct = (change / yesterday * 100.0) if yesterday > 0 else 0.0
         return cls(
             ins_code=_as_str(_pick(payload, "insCode", "ins_code", default=ins_code)),

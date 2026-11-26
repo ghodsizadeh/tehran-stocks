@@ -345,6 +345,9 @@ async def test_all_on_demand_tools_and_resources_via_mcp_client() -> None:
         assert snap["currency"] == "IRR"
         assert snap["quote"]["last"] == pytest.approx(4120.0)
         assert snap["quote"]["close"] == pytest.approx(4110.0)
+        assert snap["quote"]["yesterday"] == pytest.approx(4000.0)
+        assert snap["quote"]["change"] == pytest.approx(120.0)
+        assert snap["quote"]["change_pct"] == pytest.approx(3.0)
         assert snap["valuation"]["eps"] == pytest.approx(275.0)
         assert snap["valuation"]["pe_ratio"] == pytest.approx(round(4110.0 / 275.0, 2))
         assert len(snap["order_book"]["levels"]) == 5
