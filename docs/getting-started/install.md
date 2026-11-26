@@ -134,6 +134,14 @@ tse --version
     tse --timeout 30 --proxy http://127.0.0.1:8080 quote کگل
     ```
 
+    برای پروکسی SOCKS، وابستگی اختیاری را نصب کنید:
+
+    ```bash
+    pip install "tehran-stocks[socks]"
+    # یا اجرای بدون نصب دائمی:
+    uvx --from "tehran-stocks[socks]" tse ...
+    ```
+
 ---
 
 ## گام بعدی چیست؟

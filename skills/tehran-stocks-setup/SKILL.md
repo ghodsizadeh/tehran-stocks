@@ -253,5 +253,5 @@ tse skill install --target claude --scope global --overwrite
 ### Common Setup Issues
 
 1. **Persian vs. Arabic `ک`/`ی` characters**: v3.0 normalizes Persian (`ک`, `ی`) and Arabic (`ك`, `ي`) transparently via `normalize_persian()`, so `"کگل"` and `"كگل"` resolve identically.
-2. **Slow or blocked connections to `cdn.tsetmc.com`**: Set `--timeout` / `TEHRAN_STOCKS_TIMEOUT` or route via `--proxy` / `TEHRAN_STOCKS_PROXY`. `httpx2` handles HTTP/2, system TLS (`truststore`), and browser `User-Agent` headers automatically (`GET` endpoints only).
+2. **Slow or blocked connections to `cdn.tsetmc.com`**: Set `--timeout` / `TEHRAN_STOCKS_TIMEOUT` or route via `--proxy` / `TEHRAN_STOCKS_PROXY`. `httpx2` handles HTTP/2, system TLS (`truststore`), and browser `User-Agent` headers automatically (`GET` endpoints only). For a SOCKS proxy, install the optional dependency with `pip install "tehran-stocks[socks]"` or run through `uvx --from "tehran-stocks[socks]" tse ...`.
 3. **Missing driver error in `SQLAlchemyStore`**: Install `tehran-stocks[postgres]` or `tehran-stocks[duckdb]` for external database engines; `SQLiteStore` works with zero extras.

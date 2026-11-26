@@ -130,4 +130,5 @@ tse db query --db ./tse.sqlite \
   ```bash
   tse --timeout 30 --proxy http://127.0.0.1:8080 market
   ```
+- **پروکسی SOCKS:** وابستگی اختیاری را با `pip install "tehran-stocks[socks]"` نصب کنید. برای اجرای بدون نصب دائمی نیز از `uvx --from "tehran-stocks[socks]" tse ...` استفاده کنید.
 - **کدهای خروج (Exit Codes) برای اسکریپت‌نویسی:** خطاها تمیز روی `stderr` چاپ می‌شوند و کد خروج مشخص برمی‌گردانند (`2` خطای ورودی، `3` نماد یافت نشد، `4` محدودیت نرخ، `5` خطای TSETMC و `6` خطای پایگاه داده).

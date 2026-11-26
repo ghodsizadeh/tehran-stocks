@@ -70,6 +70,19 @@ class _BaseTransport:
         return kwargs
 
     @staticmethod
+    def _create_http_client(client_cls: Any, kwargs: dict[str, Any]) -> Any:
+        try:
+            return client_cls(**kwargs)
+        except ImportError as exc:
+            if "Using SOCKS proxy" in str(exc) and "'socksio' package is not installed" in str(exc):
+                raise TSETMCError(
+                    "SOCKS proxy support requires the optional 'socksio' dependency. "
+                    'Install it with `pip install "tehran-stocks[socks]"` '
+                    'or use `uvx --from "tehran-stocks[socks]" tse ...`.'
+                ) from exc
+            raise
+
+    @staticmethod
     def _parse_retry_after(response: httpx2.Response) -> float | None:
         raw = response.headers.get("Retry-After")
         if not raw:
@@ -160,7 +173,7 @@ class SyncTransport(_BaseTransport):
             proxy=proxy,
             headers=headers,
         )
-        self._client = httpx2.Client(**self._client_kwargs(transport))
+        self._client = self._create_http_client(httpx2.Client, self._client_kwargs(transport))
 
     def get_json(self, path: str, *, params: Mapping[str, Any] | None = None) -> Any:
         """Perform an HTTP GET request with exponential-backoff retries and parse JSON."""
@@ -227,7 +240,7 @@ class AsyncTransport(_BaseTransport):
             headers=headers,
         )
         self.max_concurrency = max_concurrency
-        self._client = httpx2.AsyncClient(**self._client_kwargs(transport))
+        self._client = self._create_http_client(httpx2.AsyncClient, self._client_kwargs(transport))
         self._semaphore: asyncio.Semaphore | None = None
         self._semaphore_loop: asyncio.AbstractEventLoop | None = None
 

@@ -722,6 +722,22 @@ def test_error_exit_codes_global_options_and_hooks(monkeypatch: pytest.MonkeyPat
     assert "skill" in skill_help.stdout.lower()
 
 
+def test_socks_proxy_missing_dependency_is_clean_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Return a clean CLI error with the SOCKS extra installation command."""
+    monkeypatch.setitem(sys.modules, "socksio", None)
+
+    result = runner.invoke(
+        app,
+        ["--proxy", "socks5://127.0.0.1:1080", "market", "--json"],
+    )
+
+    assert result.exit_code == 5
+    assert result.stdout == ""
+    assert "TSETMCError:" in result.stderr
+    assert "tehran-stocks[socks]" in result.stderr
+    assert "Traceback" not in result.stderr
+
+
 SECRET_DB_URL = "postgresql://alice:s3cr3t_pw@localhost:5432/tse?sslmode=require"
 SAFE_DB_URL = "postgresql://localhost:5432/tse"
 
