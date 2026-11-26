@@ -863,6 +863,18 @@ def test_transport_validation_and_proxy_configuration() -> None:
         assert client.transport.proxy == "http://127.0.0.1:8888"
 
 
+@pytest.mark.parametrize("client_cls", [Client, AsyncClient])
+def test_socks_proxy_missing_dependency_has_install_guidance(
+    client_cls: type[Client] | type[AsyncClient],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Explain how to install the SOCKS extra instead of leaking ImportError."""
+    monkeypatch.setitem(sys.modules, "socksio", None)
+
+    with pytest.raises(TSETMCError, match=r"tehran-stocks\[socks\]"):
+        client_cls(proxy="socks5://127.0.0.1:1080")
+
+
 def test_client_and_api_zero_import_side_effects(tmp_path: Path) -> None:
     src_dir = Path(__file__).resolve().parents[2] / "src"
     env = {

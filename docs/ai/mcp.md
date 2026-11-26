@@ -120,6 +120,8 @@ tse mcp --transport streamable-http --host 127.0.0.1 --port 8000 \
 | `--host` / `--port` | — | آدرس و پورت سرور در حالت `streamable-http` |
 | `--log-level` *(روی `tehran-stocks-mcp`)* | `TEHRAN_STOCKS_LOG_LEVEL` | سطح لاگ روی `stderr` (پیش‌فرض `INFO`) |
 
+برای استفاده از پروکسی SOCKS، وابستگی اختیاری را با `pip install "tehran-stocks[socks]"` نصب کنید. با `uvx --from "tehran-stocks[socks]" tse mcp` نیز می‌توانید سرور را بدون نصب دائمی اجرا کنید.
+
 ---
 
 ## سناریوهای واقعی: چه چیزهایی می‌توانید از هوش مصنوعی بپرسید؟

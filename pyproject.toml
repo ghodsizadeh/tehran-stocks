@@ -46,6 +46,7 @@ dependencies = [
 [project.optional-dependencies]
 postgres = ["psycopg[binary]>=3.2"]
 duckdb = ["duckdb>=1.1", "duckdb-engine>=0.13"]
+socks = ["httpx2[socks]>=2.16.2"]
 
 [project.scripts]
 tse = "tehran_stocks.cli:main"
