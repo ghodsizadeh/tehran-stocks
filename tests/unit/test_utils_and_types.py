@@ -660,3 +660,61 @@ def test_numeric_hardening_and_tsetmc_aliases() -> None:
 
     q = Quote.from_tsetmc({"pDrCotVal": 10000, "instrumentState": {"cEtaval": "A", "cEtavalTitle": "مجاز"}}, ins_code="123")
     assert q.state_title == "مجاز"
+
+
+def test_quote_change_uses_last_versus_yesterday_when_provider_change_is_zero() -> None:
+    """A zero TSETMC priceChange must not hide a real last-versus-yesterday move."""
+    moved = Quote.from_tsetmc(
+        {
+            "pDrCotVal": 4350,
+            "pClosing": 4340,
+            "priceYesterday": 4230,
+            "priceChange": 0.0,
+        }
+    )
+    assert moved.last == pytest.approx(4350.0)
+    assert moved.yesterday == pytest.approx(4230.0)
+    assert moved.change == pytest.approx(120.0)
+    assert moved.change_pct == pytest.approx(120.0 / 4230.0 * 100.0)
+    assert round(moved.change_pct, 4) == pytest.approx(2.8369)
+
+    foolad = Quote.from_tsetmc(
+        {
+            "pDrCotVal": 5420,
+            "priceYesterday": 5270,
+            "priceChange": 0.0,
+        }
+    )
+    assert foolad.change == pytest.approx(150.0)
+    assert foolad.change_pct == pytest.approx(150.0 / 5270.0 * 100.0)
+
+    flat = Quote.from_tsetmc(
+        {
+            "pDrCotVal": 4230,
+            "priceYesterday": 4230,
+            "priceChange": 0.0,
+        }
+    )
+    assert flat.change == pytest.approx(0.0)
+    assert flat.change_pct == pytest.approx(0.0)
+
+    # A real flat last price stays zero even if the provider field disagrees.
+    flat_despite_provider = Quote.from_tsetmc(
+        {
+            "pDrCotVal": 4230,
+            "priceYesterday": 4230,
+            "priceChange": 50.0,
+        }
+    )
+    assert flat_despite_provider.change == pytest.approx(0.0)
+
+    # Without both prices, keep the provider change instead of inventing one.
+    provider_only = Quote.from_tsetmc({"priceChange": 40.0})
+    assert provider_only.change == pytest.approx(40.0)
+    assert provider_only.change_pct == pytest.approx(0.0)
+
+    no_last = Quote.from_tsetmc(
+        {"pDrCotVal": 0, "priceYesterday": 4230, "priceChange": -15.0}
+    )
+    assert no_last.change == pytest.approx(-15.0)
+    assert no_last.change_pct == pytest.approx(-15.0 / 4230.0 * 100.0)
